@@ -194,6 +194,15 @@ export interface Message {
   createdAt: string;
 }
 
+export interface AttributeOption {
+  id: string;
+  groupKey: string;
+  label: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   users: { total: number; admins: number };
   pendingReview: {

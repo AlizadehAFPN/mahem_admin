@@ -16,6 +16,7 @@ const navItems = [
   { href: '/dashboard/users', label: 'کاربران', icon: '👥' },
   { href: '/dashboard/cities', label: 'شهرها', icon: '📍' },
   { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: '🗂️' },
+  { href: '/dashboard/attribute-options', label: 'فیلدهای اختصاصی آگهی', icon: '⚙️' },
   { href: '/dashboard/banners', label: 'بنرها', icon: '🖼️' },
   { href: '/dashboard/splash-screens', label: 'تصویر اسپلش', icon: '📱' },
 ];
