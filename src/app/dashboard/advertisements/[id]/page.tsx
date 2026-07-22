@@ -148,6 +148,14 @@ export default async function AdvertisementDetailPage({
                 <dt className="text-gray-500">تعداد بازدید</dt>
                 <dd className="font-medium text-gray-900">{ad.viewsCount}</dd>
               </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">امتیاز</dt>
+                <dd className="font-medium text-gray-900">
+                  {ad.ratingCount > 0
+                    ? `${ad.ratingAvg.toFixed(1)} از ۵ (${ad.ratingCount.toLocaleString('fa-IR')} رأی)`
+                    : 'بدون امتیاز'}
+                </dd>
+              </div>
             </dl>
           </section>
         </div>

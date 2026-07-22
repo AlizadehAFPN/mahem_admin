@@ -8,11 +8,13 @@ import type { ActionResult } from '@/components/entity-modal';
 function buildPayload(formData: FormData) {
   const parentId = String(formData.get('parentId') ?? '');
   const icon = String(formData.get('icon') ?? '');
+  const color = String(formData.get('color') ?? '').trim();
   return {
     name: String(formData.get('name')),
     slug: String(formData.get('slug')),
     type: String(formData.get('type')),
     ...(icon ? { icon } : {}),
+    ...(color ? { color } : {}),
     ...(parentId ? { parentId } : {}),
   };
 }

@@ -57,6 +57,7 @@ export default async function CategoriesPage() {
     { name: 'name', label: 'نام دسته‌بندی', required: true },
     { name: 'slug', label: 'شناسه (slug)', required: true },
     { name: 'icon', label: 'آیکون (اختیاری)' },
+    { name: 'color', label: 'رنگ پین نقشه (اختیاری، مثل ‎#E53935‎)' },
     {
       name: 'type',
       label: 'نوع',
@@ -102,6 +103,7 @@ export default async function CategoriesPage() {
             <tr>
               <th className="px-4 py-3">مسیر کامل</th>
               <th className="px-4 py-3">شناسه</th>
+              <th className="px-4 py-3">رنگ</th>
               <th className="px-4 py-3">نوع</th>
               <th className="px-4 py-3">سطح</th>
               <th className="px-4 py-3">عملیات</th>
@@ -115,6 +117,19 @@ export default async function CategoriesPage() {
                 </td>
                 <td className="px-4 py-3 text-gray-500" dir="ltr">
                   {category.slug}
+                </td>
+                <td className="px-4 py-3">
+                  {category.color ? (
+                    <span className="inline-flex items-center gap-1.5" dir="ltr">
+                      <span
+                        className="inline-block h-4 w-4 rounded-full ring-1 ring-gray-300"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <span className="text-xs text-gray-500">{category.color}</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
@@ -132,6 +147,7 @@ export default async function CategoriesPage() {
                         name: category.name,
                         slug: category.slug,
                         icon: category.icon,
+                        color: category.color,
                         type: category.type,
                         parentId: category.parentId,
                       }}
@@ -147,7 +163,7 @@ export default async function CategoriesPage() {
             ))}
             {categories.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
                   دسته‌بندی‌ای ثبت نشده است
                 </td>
               </tr>

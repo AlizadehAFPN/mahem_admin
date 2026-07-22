@@ -32,6 +32,8 @@ export interface Category {
   name: string;
   slug: string;
   icon: string | null;
+  // Hex color used to tint this category's pins on the app's discount map.
+  color: string | null;
   type: CategoryType;
   parentId: string | null;
 }
@@ -110,6 +112,8 @@ export interface Advertisement extends ListingBase {
   viewsCount: number;
   lat: number | null;
   lng: number | null;
+  ratingAvg: number;
+  ratingCount: number;
 }
 
 export interface Store extends PaidListingBase {
