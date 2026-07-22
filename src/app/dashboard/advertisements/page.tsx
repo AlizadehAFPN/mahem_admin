@@ -4,7 +4,7 @@ import { Pagination } from '@/components/pagination';
 import { RejectButton } from '@/components/reject-button';
 import { apiGet } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
-import type { Advertisement, Paginated } from '@/lib/types';
+import type { Advertisement, Category, Paginated } from '@/lib/types';
 import { approveAdvertisementAction, rejectAdvertisementAction } from './actions';
 
 function formatPrice(price: string | null) {
@@ -24,11 +24,18 @@ export default async function AdvertisementsPage({
   const approvalStatus = params.approvalStatus ?? '';
   const search = params.search ?? '';
 
+  // تخفیف‌یاب ads have their own dedicated moderation page now
+  // (/dashboard/discounts) — exclude them here so they aren't moderated
+  // twice from two different lists.
+  const categories = await apiGet<Category[]>('/categories', token);
+  const discountCategory = categories.find(category => category.name === 'تخفیف یاب');
+
   const query = new URLSearchParams();
   query.set('page', String(page));
   query.set('limit', '20');
   if (approvalStatus) query.set('approvalStatus', approvalStatus);
   if (search) query.set('search', search);
+  if (discountCategory) query.set('excludeParentCategoryId', discountCategory.id);
 
   const result = await apiGet<Paginated<Advertisement>>(
     `/admin/advertisements?${query.toString()}`,
