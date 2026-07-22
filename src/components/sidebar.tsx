@@ -9,6 +9,7 @@ const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: '📊' },
   { href: '/dashboard/advertisements', label: 'آگهی‌ها', icon: '🏷️' },
   { href: '/dashboard/discounts', label: 'تخفیف یاب', icon: '🏷️' },
+  { href: '/dashboard/stores', label: 'فروشگاه‌ها', icon: '🏪' },
   { href: '/dashboard/jobs', label: 'مشاغل', icon: '💼' },
   { href: '/dashboard/reports', label: 'گزارش‌ها', icon: '🚩' },
   { href: '/dashboard/conversations', label: 'مکالمات', icon: '💬' },

@@ -122,6 +122,11 @@ export interface Store extends PaidListingBase {
   address: string | null;
   phone: string | null;
   images: string[];
+  logo: string | null;
+  banner: string | null;
+  // Monthly storefront subscription expiry — pushed 30 days out each time
+  // confirm-payment is used (initial subscription or a later renewal).
+  subscriptionExpiresAt: string | null;
 }
 
 export interface Job extends PaidListingBase {
