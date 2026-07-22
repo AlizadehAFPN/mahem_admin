@@ -3,6 +3,7 @@ import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
 import { RejectButton } from '@/components/reject-button';
 import { apiGet } from '@/lib/api';
+import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { StoreOffer } from '@/lib/types';
 import {
@@ -91,7 +92,7 @@ export default async function StoreOfferDetailPage({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={url}
-              src={url}
+              src={proxiedImageUrl(url)}
               alt=""
               className="h-40 w-full rounded-xl object-cover ring-1 ring-gray-200"
             />

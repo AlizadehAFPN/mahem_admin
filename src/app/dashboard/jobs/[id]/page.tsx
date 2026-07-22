@@ -3,6 +3,7 @@ import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
 import { RejectButton } from '@/components/reject-button';
 import { apiGet } from '@/lib/api';
+import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { Job } from '@/lib/types';
 import {
@@ -88,11 +89,11 @@ export default async function JobDetailPage({
       <div className="flex gap-4">
         {job.banner && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={job.banner} alt="" className="h-40 w-64 rounded-xl object-cover ring-1 ring-gray-200" />
+          <img src={proxiedImageUrl(job.banner)} alt="" className="h-40 w-64 rounded-xl object-cover ring-1 ring-gray-200" />
         )}
         {job.logo && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={job.logo} alt="" className="h-40 w-40 rounded-xl object-cover ring-1 ring-gray-200" />
+          <img src={proxiedImageUrl(job.logo)} alt="" className="h-40 w-40 rounded-xl object-cover ring-1 ring-gray-200" />
         )}
       </div>
 

@@ -1,6 +1,7 @@
 import { DeleteButton } from '@/components/delete-button';
 import { EntityModal } from '@/components/entity-modal';
 import { apiGet } from '@/lib/api';
+import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { Banner, City } from '@/lib/types';
 import { createBannerAction, deleteBannerAction, updateBannerAction } from './actions';
@@ -50,7 +51,7 @@ export default async function BannersPage() {
           <div key={banner.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
             <div className="relative h-36 w-full bg-gray-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={banner.imageUrl} alt="" className="h-full w-full object-cover" />
+              <img src={proxiedImageUrl(banner.imageUrl)} alt="" className="h-full w-full object-cover" />
               <span
                 className={`absolute right-2 top-2 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                   banner.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
@@ -72,7 +73,7 @@ export default async function BannersPage() {
                   fields={editFields}
                   initialValues={{
                     imageUrl: banner.imageUrl,
-                    imageFilePreviewUrl: banner.imageUrl,
+                    imageFilePreviewUrl: proxiedImageUrl(banner.imageUrl),
                     cityId: banner.cityId,
                     link: banner.link,
                     order: banner.order,

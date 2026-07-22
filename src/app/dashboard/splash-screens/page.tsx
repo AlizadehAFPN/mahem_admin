@@ -1,6 +1,7 @@
 import { DeleteButton } from '@/components/delete-button';
 import { EntityModal } from '@/components/entity-modal';
 import { apiGet } from '@/lib/api';
+import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { City, SplashScreen } from '@/lib/types';
 import {
@@ -57,7 +58,7 @@ export default async function SplashScreensPage() {
           >
             <div className="relative h-36 w-full bg-gray-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={splash.imageUrl} alt="" className="h-full w-full object-cover" />
+              <img src={proxiedImageUrl(splash.imageUrl)} alt="" className="h-full w-full object-cover" />
             </div>
             <div className="space-y-2 p-4">
               <p className="text-xs font-medium text-gray-700">شهر: {splash.city?.name ?? '—'}</p>
@@ -71,7 +72,7 @@ export default async function SplashScreensPage() {
                   fields={editFields}
                   initialValues={{
                     imageUrl: splash.imageUrl,
-                    imageFilePreviewUrl: splash.imageUrl,
+                    imageFilePreviewUrl: proxiedImageUrl(splash.imageUrl),
                   }}
                   action={updateSplashScreenAction.bind(null, splash.id)}
                 />
