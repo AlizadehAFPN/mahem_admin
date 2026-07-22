@@ -21,14 +21,8 @@ export default async function DashboardPage() {
           <Link href="/dashboard/advertisements?approvalStatus=PENDING">
             <StatCard label="آگهی‌ها" value={stats.pendingReview.advertisements} accent="warning" />
           </Link>
-          <Link href="/dashboard/stores?approvalStatus=PENDING">
-            <StatCard label="فروشگاه‌ها" value={stats.pendingReview.stores} accent="warning" />
-          </Link>
           <Link href="/dashboard/jobs?approvalStatus=PENDING">
             <StatCard label="مشاغل" value={stats.pendingReview.jobs} accent="warning" />
-          </Link>
-          <Link href="/dashboard/store-offers?approvalStatus=PENDING">
-            <StatCard label="آگهی‌های تخفیف" value={stats.pendingReview.storeOffers} accent="warning" />
           </Link>
           <Link href="/dashboard/reports?status=PENDING">
             <StatCard label="گزارش‌ها" value={stats.pendingReview.reports} accent="warning" />
@@ -43,7 +37,6 @@ export default async function DashboardPage() {
           <StatCard label="کل کاربران" value={stats.users.total} />
           <StatCard label="ادمین‌ها" value={stats.users.admins} />
           <StatCard label="کل آگهی‌ها" value={stats.listings.advertisements} />
-          <StatCard label="کل فروشگاه‌ها" value={stats.listings.stores} />
           <StatCard label="کل مشاغل" value={stats.listings.jobs} />
         </div>
       </section>

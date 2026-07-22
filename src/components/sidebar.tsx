@@ -8,8 +8,6 @@ import type { AdminUser } from '@/lib/types';
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: '📊' },
   { href: '/dashboard/advertisements', label: 'آگهی‌ها', icon: '🏷️' },
-  { href: '/dashboard/stores', label: 'فروشگاه‌ها', icon: '🏬' },
-  { href: '/dashboard/store-offers', label: 'آگهی‌های تخفیف', icon: '🏷️' },
   { href: '/dashboard/jobs', label: 'مشاغل', icon: '💼' },
   { href: '/dashboard/reports', label: 'گزارش‌ها', icon: '🚩' },
   { href: '/dashboard/conversations', label: 'مکالمات', icon: '💬' },
