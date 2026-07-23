@@ -148,6 +148,8 @@ export interface Job extends PaidListingBase {
   email: string | null;
   banner: string | null;
   logo: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface StoreOffer {

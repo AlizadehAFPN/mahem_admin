@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AdLocationMap } from '@/components/ad-location-map';
 import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
 import { RejectButton } from '@/components/reject-button';
@@ -148,6 +149,15 @@ export default async function JobDetailPage({
             </div>
           ))}
         </dl>
+      </section>
+
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+        <h2 className="mb-3 text-sm font-semibold text-gray-500">موقعیت مکانی</h2>
+        {job.lat != null && job.lng != null ? (
+          <AdLocationMap lat={job.lat} lng={job.lng} />
+        ) : (
+          <p className="text-sm text-gray-400">موقعیتی برای این صنف ثبت نشده است</p>
+        )}
       </section>
     </div>
   );
