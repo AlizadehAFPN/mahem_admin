@@ -22,6 +22,17 @@ export async function rejectAdvertisementAction(id: string, formData: FormData) 
   revalidatePath('/dashboard');
 }
 
+// Confirms the one-off posting fee for ads under a fee-required category
+// (استخدامی/تخفیف‌یاب — see Category.adFeeToman) after a manual bank
+// transfer — same pattern as confirmStorePaymentAction, but not a
+// subscription (no expiry date to push out).
+export async function confirmAdvertisementPaymentAction(id: string) {
+  const { token } = await requireAdminUser();
+  await apiPatch(`/admin/advertisements/${id}/confirm-payment`, undefined, token);
+  revalidatePath('/dashboard/advertisements');
+  revalidatePath(`/dashboard/advertisements/${id}`);
+}
+
 // Hits the plain (non-admin-prefixed) endpoint — its ownership check already
 // bypasses for ADMIN/SUPER_ADMIN, so no separate admin route was needed.
 export async function deleteAdvertisementAction(id: string) {

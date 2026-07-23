@@ -5,7 +5,11 @@ import { RejectButton } from '@/components/reject-button';
 import { apiGet } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
 import type { Advertisement, Category, Paginated } from '@/lib/types';
-import { approveAdvertisementAction, rejectAdvertisementAction } from './actions';
+import {
+  approveAdvertisementAction,
+  confirmAdvertisementPaymentAction,
+  rejectAdvertisementAction,
+} from './actions';
 
 function formatPrice(price: string | null) {
   if (!price) return '—';
@@ -91,6 +95,7 @@ export default async function AdvertisementsPage({
               <th className="px-4 py-3">شهر</th>
               <th className="px-4 py-3">قیمت</th>
               <th className="px-4 py-3">وضعیت</th>
+              <th className="px-4 py-3">پرداخت</th>
               <th className="px-4 py-3">عملیات</th>
             </tr>
           </thead>
@@ -115,25 +120,50 @@ export default async function AdvertisementsPage({
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  {ad.approvalStatus !== 'APPROVED' && (
-                    <div className="flex gap-2">
-                      <form action={approveAdvertisementAction.bind(null, ad.id)}>
+                  {ad.paymentStatus && (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        ad.paymentStatus === 'PAID'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {ad.paymentStatus === 'PAID' ? 'پرداخت‌شده' : 'در انتظار پرداخت'}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-2">
+                    {ad.paymentStatus === 'PENDING' && (
+                      <form action={confirmAdvertisementPaymentAction.bind(null, ad.id)}>
                         <button
                           type="submit"
-                          className="rounded-lg border border-green-300 px-3 py-1.5 text-sm text-green-700 transition hover:bg-green-50"
+                          className="rounded-lg border border-blue-300 px-3 py-1.5 text-sm text-blue-700 transition hover:bg-blue-50"
                         >
-                          تایید
+                          تایید پرداخت
                         </button>
                       </form>
-                      <RejectButton action={rejectAdvertisementAction.bind(null, ad.id)} />
-                    </div>
-                  )}
+                    )}
+                    {ad.approvalStatus !== 'APPROVED' && (
+                      <>
+                        <form action={approveAdvertisementAction.bind(null, ad.id)}>
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-green-300 px-3 py-1.5 text-sm text-green-700 transition hover:bg-green-50"
+                          >
+                            تایید
+                          </button>
+                        </form>
+                        <RejectButton action={rejectAdvertisementAction.bind(null, ad.id)} />
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
             {result.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
                   موردی یافت نشد
                 </td>
               </tr>

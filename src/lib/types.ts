@@ -114,6 +114,10 @@ export interface Advertisement extends ListingBase {
   lng: number | null;
   ratingAvg: number;
   ratingCount: number;
+  // Only set for ads under a fee-required root category (e.g. استخدامی/
+  // تخفیف‌یاب — see Category.adFeeToman); null means no fee was required.
+  paymentStatus: PaymentStatus | null;
+  paymentConfirmedAt: string | null;
 }
 
 export interface Store extends PaidListingBase {

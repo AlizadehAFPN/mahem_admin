@@ -9,6 +9,7 @@ import { requireAdminUser } from '@/lib/session';
 import type { Advertisement } from '@/lib/types';
 import {
   approveAdvertisementAction,
+  confirmAdvertisementPaymentAction,
   deleteAdvertisementAction,
   rejectAdvertisementAction,
 } from '../actions';
@@ -40,9 +41,30 @@ export default async function AdvertisementDetailPage({
           <div className="mt-2 flex items-center gap-2">
             <Badge value={ad.approvalStatus} />
             <Badge value={ad.status} />
+            {ad.paymentStatus && (
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  ad.paymentStatus === 'PAID'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {ad.paymentStatus === 'PAID' ? 'پرداخت‌شده' : 'در انتظار پرداخت'}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
+          {ad.paymentStatus === 'PENDING' && (
+            <form action={confirmAdvertisementPaymentAction.bind(null, ad.id)}>
+              <button
+                type="submit"
+                className="rounded-lg border border-blue-300 px-4 py-2 text-sm text-blue-700 transition hover:bg-blue-50"
+              >
+                تایید پرداخت
+              </button>
+            </form>
+          )}
           {ad.approvalStatus !== 'APPROVED' && (
             <>
               <form action={approveAdvertisementAction.bind(null, ad.id)}>
