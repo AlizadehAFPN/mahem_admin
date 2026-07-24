@@ -19,6 +19,37 @@ function formatPrice(price: string | null) {
   return `${Number(price).toLocaleString('fa-IR')} تومان`;
 }
 
+// Persian labels for attribute keys the mobile app is known to send (see
+// mahem's src/utiles/translations.ts and CommonForm/ContactInfoCard) — any
+// other/unrecognized key still falls back to its raw name so nothing is
+// ever silently hidden.
+const ATTRIBUTE_LABELS: Record<string, string> = {
+  education: 'میزان تحصیلات',
+  degree: 'میزان تحصیلات',
+  contractType: 'نوع قرارداد',
+  contract_type: 'نوع قرارداد',
+  ad_type: 'نوع آگهی',
+  email: 'ایمیل',
+  chatEnabled: 'چت فعال است',
+  hideEmail: 'ایمیل در آگهی مخفی شود',
+  brand: 'برند',
+  area: 'مساحت',
+};
+
+function formatAttributeValue(key: string, value: unknown) {
+  if (typeof value === 'boolean') {
+    return value ? 'بله' : 'خیر';
+  }
+  if (key === 'email' && typeof value === 'string' && value) {
+    return (
+      <a href={`mailto:${value}`} className="text-blue-600 hover:underline" dir="ltr">
+        {value}
+      </a>
+    );
+  }
+  return String(value);
+}
+
 export default async function AdvertisementDetailPage({
   params,
 }: {
@@ -129,10 +160,12 @@ export default async function AdvertisementDetailPage({
               <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                 {attributeEntries.map(([key, value]) => (
                   <div key={key} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-                    <dt className="text-gray-500" dir="ltr">
-                      {key}
+                    <dt className="text-gray-500" dir={ATTRIBUTE_LABELS[key] ? undefined : 'ltr'}>
+                      {ATTRIBUTE_LABELS[key] ?? key}
                     </dt>
-                    <dd className="font-medium text-gray-900">{String(value)}</dd>
+                    <dd className="font-medium text-gray-900">
+                      {formatAttributeValue(key, value)}
+                    </dd>
                   </div>
                 ))}
               </dl>
