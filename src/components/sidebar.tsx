@@ -20,6 +20,7 @@ const navItems = [
   { href: '/dashboard/attribute-options', label: 'فیلدهای اختصاصی آگهی', icon: '⚙️' },
   { href: '/dashboard/banners', label: 'بنرها', icon: '🖼️' },
   { href: '/dashboard/splash-screens', label: 'تصویر اسپلش', icon: '📱' },
+  { href: '/dashboard/ad-expiry', label: 'تاریخ انقضا آگهی', icon: '⏳', superAdminOnly: true },
 ];
 
 export function Sidebar({ user }: { user: AdminUser }) {

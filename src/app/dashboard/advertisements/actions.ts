@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { apiDelete, apiPatch } from '@/lib/api';
-import { requireAdminUser } from '@/lib/session';
+import { requireAdminUser, requireSuperAdmin } from '@/lib/session';
 
 export async function approveAdvertisementAction(id: string) {
   const { token } = await requireAdminUser();
@@ -40,4 +40,22 @@ export async function deleteAdvertisementAction(id: string) {
   await apiDelete(`/advertisements/${id}`, token);
   revalidatePath('/dashboard/advertisements');
   redirect('/dashboard/advertisements');
+}
+
+// SUPER_ADMIN-only: manually pushes (or sets) this ad's expiry date — see
+// AdExpirySetting for the global default new ads get instead.
+export async function setAdvertisementExpiryAction(id: string, formData: FormData) {
+  const { token } = await requireSuperAdmin();
+  const expiresAt = String(formData.get('expiresAt') ?? '');
+  await apiPatch(`/admin/advertisements/${id}/expiry`, { expiresAt }, token);
+  revalidatePath('/dashboard/advertisements');
+  revalidatePath(`/dashboard/advertisements/${id}`);
+}
+
+// SUPER_ADMIN-only: archives an ad immediately, independent of its expiresAt.
+export async function archiveAdvertisementAction(id: string) {
+  const { token } = await requireSuperAdmin();
+  await apiPatch(`/admin/advertisements/${id}/archive`, undefined, token);
+  revalidatePath('/dashboard/advertisements');
+  revalidatePath(`/dashboard/advertisements/${id}`);
 }

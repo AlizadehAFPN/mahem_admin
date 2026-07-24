@@ -1,7 +1,7 @@
 export type Role = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 export type Sex = 'MALE' | 'FEMALE' | 'UNKNOWN';
 export type CategoryType = 'GENERAL' | 'JOB';
-export type ListingStatus = 'ACTIVE' | 'INACTIVE';
+export type ListingStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type PaymentStatus = 'PENDING' | 'PAID';
 export type ReportCategory =
@@ -121,6 +121,9 @@ export interface Advertisement extends ListingBase {
   // تخفیف‌یاب — see Category.adFeeToman); null means no fee was required.
   paymentStatus: PaymentStatus | null;
   paymentConfirmedAt: string | null;
+  // Set from the global AdExpirySetting at creation, or manually by a
+  // SUPER_ADMIN; null means the ad never auto-archives.
+  expiresAt: string | null;
 }
 
 export interface Store extends PaidListingBase {

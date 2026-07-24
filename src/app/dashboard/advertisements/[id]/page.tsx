@@ -1,22 +1,31 @@
 import Link from 'next/link';
 import { AdLocationMap } from '@/components/ad-location-map';
+import { ArchiveButton } from '@/components/archive-button';
 import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
 import { RejectButton } from '@/components/reject-button';
+import { SetExpiryButton } from '@/components/set-expiry-button';
 import { apiGet } from '@/lib/api';
 import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { Advertisement } from '@/lib/types';
 import {
   approveAdvertisementAction,
+  archiveAdvertisementAction,
   confirmAdvertisementPaymentAction,
   deleteAdvertisementAction,
   rejectAdvertisementAction,
+  setAdvertisementExpiryAction,
 } from '../actions';
 
 function formatPrice(price: string | null) {
   if (!price) return '—';
   return `${Number(price).toLocaleString('fa-IR')} تومان`;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return '—';
+  return new Date(value).toLocaleDateString('fa-IR');
 }
 
 // Persian labels for attribute keys the mobile app is known to send (see
@@ -56,7 +65,7 @@ export default async function AdvertisementDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { token } = await requireAdminUser();
+  const { user, token } = await requireAdminUser();
   const ad = await apiGet<Advertisement>(`/admin/advertisements/${id}`, token);
 
   const attributeEntries = ad.attributes ? Object.entries(ad.attributes) : [];
@@ -107,6 +116,20 @@ export default async function AdvertisementDetailPage({
                 </button>
               </form>
               <RejectButton action={rejectAdvertisementAction.bind(null, ad.id)} />
+            </>
+          )}
+          {user.role === 'SUPER_ADMIN' && (
+            <>
+              <SetExpiryButton
+                action={setAdvertisementExpiryAction.bind(null, ad.id)}
+                currentExpiresAt={ad.expiresAt}
+              />
+              {ad.status !== 'ARCHIVED' && (
+                <ArchiveButton
+                  action={archiveAdvertisementAction.bind(null, ad.id)}
+                  confirmText={`آیا از آرشیو کردن آگهی «${ad.title}» مطمئن هستید؟ این آگهی از فهرست عمومی مخفی خواهد شد.`}
+                />
+              )}
             </>
           )}
           <DeleteButton
@@ -204,6 +227,14 @@ export default async function AdvertisementDetailPage({
               <div className="flex justify-between">
                 <dt className="text-gray-500">تعداد بازدید</dt>
                 <dd className="font-medium text-gray-900">{ad.viewsCount}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">تاریخ ثبت</dt>
+                <dd className="font-medium text-gray-900">{formatDate(ad.createdAt)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">تاریخ انقضا</dt>
+                <dd className="font-medium text-gray-900">{formatDate(ad.expiresAt)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500">امتیاز</dt>

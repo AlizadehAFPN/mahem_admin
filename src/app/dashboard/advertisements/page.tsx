@@ -26,6 +26,7 @@ export default async function AdvertisementsPage({
 
   const page = Number(params.page ?? '1');
   const approvalStatus = params.approvalStatus ?? '';
+  const status = params.status ?? '';
   const search = params.search ?? '';
 
   // تخفیف‌یاب ads have their own dedicated moderation page now
@@ -38,6 +39,7 @@ export default async function AdvertisementsPage({
   query.set('page', String(page));
   query.set('limit', '20');
   if (approvalStatus) query.set('approvalStatus', approvalStatus);
+  if (status) query.set('status', status);
   if (search) query.set('search', search);
   if (discountCategory) query.set('excludeParentCategoryId', discountCategory.id);
 
@@ -65,6 +67,19 @@ export default async function AdvertisementsPage({
             <option value="PENDING">در انتظار تایید</option>
             <option value="APPROVED">تایید شده</option>
             <option value="REJECTED">رد شده</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">آرشیو</label>
+          <select
+            name="status"
+            defaultValue={status}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">همه</option>
+            <option value="ACTIVE">فعال</option>
+            <option value="INACTIVE">غیرفعال</option>
+            <option value="ARCHIVED">آرشیو شده</option>
           </select>
         </div>
         <div className="flex-1 min-w-[200px]">
@@ -115,7 +130,10 @@ export default async function AdvertisementsPage({
                 <td className="px-4 py-3 text-gray-600">{formatPrice(ad.price)}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col gap-1">
-                    <Badge value={ad.approvalStatus} />
+                    <div className="flex flex-wrap gap-1">
+                      <Badge value={ad.approvalStatus} />
+                      <Badge value={ad.status} />
+                    </div>
                     {ad.approvalStatus === 'REJECTED' && ad.rejectionReason && (
                       <span className="text-xs text-gray-400">{ad.rejectionReason}</span>
                     )}
@@ -179,7 +197,7 @@ export default async function AdvertisementsPage({
         limit={result.limit}
         total={result.total}
         basePath="/dashboard/advertisements"
-        searchParams={{ approvalStatus, search }}
+        searchParams={{ approvalStatus, status, search }}
       />
     </div>
   );
