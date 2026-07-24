@@ -35,6 +35,9 @@ export interface Category {
   // Hex color used to tint this category's pins on the app's discount map.
   color: string | null;
   type: CategoryType;
+  // Display order among sibling categories (lower first), matching the
+  // Figma design's category ordering.
+  order: number;
   parentId: string | null;
 }
 

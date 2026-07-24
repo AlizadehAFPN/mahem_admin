@@ -35,6 +35,43 @@ function depth(category: Category, byId: Map<string, Category>): number {
   return d;
 }
 
+// Pre-order walk of the category tree, siblings sorted by `order` (ties by
+// name) — this is the same ordering the backend now serves the app with
+// (see CategoriesService.findAll), so the table reads top-to-bottom exactly
+// like the app's category menus do, rather than a flat alphabetical list.
+function sortByOrder(categories: Category[]): Category[] {
+  return [...categories].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'fa'));
+}
+
+// GENERAL and JOB are two separate root trees (both start their own `order`
+// count at 0), so they're flattened as separate passes and concatenated —
+// otherwise their roots would interleave by coincidentally-equal order
+// values instead of staying grouped by type.
+function flattenByDisplayOrder(categories: Category[]): Category[] {
+  const childrenByParent = new Map<string | null, Category[]>();
+  for (const category of categories) {
+    const key = category.parentId;
+    childrenByParent.set(key, [...(childrenByParent.get(key) ?? []), category]);
+  }
+
+  const result: Category[] = [];
+  const visit = (parentId: string | null) => {
+    for (const category of sortByOrder(childrenByParent.get(parentId) ?? [])) {
+      result.push(category);
+      visit(category.id);
+    }
+  };
+
+  const roots = sortByOrder(childrenByParent.get(null) ?? []);
+  for (const type of ['GENERAL', 'JOB'] as const) {
+    for (const root of roots.filter(r => r.type === type)) {
+      result.push(root);
+      visit(root.id);
+    }
+  }
+  return result;
+}
+
 export default async function CategoriesPage() {
   const { token } = await requireAdminUser();
   const categories = await apiGet<Category[]>('/categories', token);
@@ -73,11 +110,14 @@ export default async function CategoriesPage() {
       type: 'select' as const,
       options: parentOptions(initial?.id),
     },
+    {
+      name: 'order',
+      label: 'ترتیب نمایش (بین دسته‌های هم‌سطح)',
+      type: 'number' as const,
+    },
   ];
 
-  const sortedCategories = [...categories].sort((a, b) =>
-    pathLabel(a, categoryById).localeCompare(pathLabel(b, categoryById), 'fa'),
-  );
+  const sortedCategories = flattenByDisplayOrder(categories);
 
   return (
     <div className="space-y-6">
@@ -106,6 +146,7 @@ export default async function CategoriesPage() {
               <th className="px-4 py-3">رنگ</th>
               <th className="px-4 py-3">نوع</th>
               <th className="px-4 py-3">سطح</th>
+              <th className="px-4 py-3">ترتیب</th>
               <th className="px-4 py-3">عملیات</th>
             </tr>
           </thead>
@@ -137,6 +178,7 @@ export default async function CategoriesPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{depth(category, categoryById)}</td>
+                <td className="px-4 py-3 text-gray-500">{category.order}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <EntityModal
@@ -150,6 +192,7 @@ export default async function CategoriesPage() {
                         color: category.color,
                         type: category.type,
                         parentId: category.parentId,
+                        order: category.order,
                       }}
                       action={updateCategoryAction.bind(null, category.id)}
                     />
@@ -163,7 +206,7 @@ export default async function CategoriesPage() {
             ))}
             {categories.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
                   دسته‌بندی‌ای ثبت نشده است
                 </td>
               </tr>

@@ -9,12 +9,14 @@ function buildPayload(formData: FormData) {
   const parentId = String(formData.get('parentId') ?? '');
   const icon = String(formData.get('icon') ?? '');
   const color = String(formData.get('color') ?? '').trim();
+  const order = String(formData.get('order') ?? '').trim();
   return {
     name: String(formData.get('name')),
     slug: String(formData.get('slug')),
     type: String(formData.get('type')),
     ...(icon ? { icon } : {}),
     ...(color ? { color } : {}),
+    ...(order !== '' ? { order: Number(order) } : {}),
     ...(parentId ? { parentId } : {}),
   };
 }
