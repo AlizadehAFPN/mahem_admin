@@ -124,6 +124,9 @@ export interface Advertisement extends ListingBase {
   // Set from the global AdExpirySetting at creation, or manually by a
   // SUPER_ADMIN; null means the ad never auto-archives.
   expiresAt: string | null;
+  // Optional تخفیف‌یاب storefront this discount ad was posted under; null
+  // for ads not tied to a store (most non-discount categories).
+  store: { id: string; name: string; logo: string | null } | null;
 }
 
 export interface Store extends PaidListingBase {

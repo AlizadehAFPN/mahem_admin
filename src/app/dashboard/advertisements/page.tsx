@@ -122,8 +122,8 @@ export default async function AdvertisementsPage({
                     {ad.title}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-600" dir="ltr">
-                  {ad.user?.username ?? ad.user?.mobile ?? '—'}
+                <td className="px-4 py-3 text-gray-600" dir={!ad.user?.username && ad.store?.name ? undefined : 'ltr'}>
+                  {ad.user?.username ?? ad.store?.name ?? '—'}
                 </td>
                 <td className="px-4 py-3 text-gray-600">{ad.category?.name}</td>
                 <td className="px-4 py-3 text-gray-600">{ad.city?.name}</td>
