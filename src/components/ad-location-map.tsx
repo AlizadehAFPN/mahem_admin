@@ -18,7 +18,7 @@ const LeafletMap = dynamic(() => import('./leaflet-map'), {
 
 export function AdLocationMap({ lat, lng }: { lat: number; lng: number }) {
   return (
-    <div className="h-72 w-full overflow-hidden rounded-2xl ring-1 ring-gray-200">
+    <div className="isolate h-72 w-full overflow-hidden rounded-2xl ring-1 ring-gray-200">
       <LeafletMap lat={lat} lng={lng} />
     </div>
   );

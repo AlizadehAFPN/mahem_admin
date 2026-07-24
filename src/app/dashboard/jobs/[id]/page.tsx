@@ -19,6 +19,11 @@ function formatSalary(salary: string | null) {
   return `${Number(salary).toLocaleString('fa-IR')} تومان`;
 }
 
+function formatDate(value: string | null) {
+  if (!value) return '—';
+  return new Date(value).toLocaleDateString('fa-IR');
+}
+
 export default async function JobDetailPage({
   params,
 }: {
@@ -124,6 +129,10 @@ export default async function JobDetailPage({
             <div className="flex justify-between">
               <dt className="text-gray-500">حقوق</dt>
               <dd className="font-medium text-gray-900">{formatSalary(job.salary)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">تاریخ انقضا</dt>
+              <dd className="font-medium text-gray-900">{formatDate(job.expiresAt)}</dd>
             </div>
           </dl>
         </section>

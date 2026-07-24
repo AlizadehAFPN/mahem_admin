@@ -137,8 +137,9 @@ export interface Store extends PaidListingBase {
   images: string[];
   logo: string | null;
   banner: string | null;
-  // Monthly storefront subscription expiry — pushed 30 days out each time
-  // confirm-payment is used (initial subscription or a later renewal).
+  // Storefront subscription expiry — pushed out by StoreExpirySetting.
+  // expiryDays each time confirm-payment is used (initial subscription or a
+  // later renewal). Auto-archived once past (see StoreExpiryCron).
   subscriptionExpiresAt: string | null;
 }
 
@@ -146,6 +147,10 @@ export interface Job extends PaidListingBase {
   title: string;
   description: string;
   salary: string | null;
+  // Set from JobExpirySetting.expiryDays at creation and extended by the
+  // same setting on a later renewal confirmation; null means the job
+  // posting never auto-archives (see JobExpiryCron).
+  expiresAt: string | null;
   manager: string | null;
   phone: string | null;
   registerCode: string | null;

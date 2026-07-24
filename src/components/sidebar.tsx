@@ -21,6 +21,8 @@ const navItems = [
   { href: '/dashboard/banners', label: 'بنرها', icon: '🖼️' },
   { href: '/dashboard/splash-screens', label: 'تصویر اسپلش', icon: '📱' },
   { href: '/dashboard/ad-expiry', label: 'تاریخ انقضا آگهی', icon: '⏳', superAdminOnly: true },
+  { href: '/dashboard/store-expiry', label: 'مدت اشتراک فروشگاه', icon: '⏳', superAdminOnly: true },
+  { href: '/dashboard/job-expiry', label: 'تاریخ انقضا آگهی استخدام', icon: '⏳', superAdminOnly: true },
 ];
 
 export function Sidebar({ user }: { user: AdminUser }) {
