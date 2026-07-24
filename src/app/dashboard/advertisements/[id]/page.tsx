@@ -191,7 +191,9 @@ export default async function AdvertisementDetailPage({
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500">مالک</dt>
-                <dd className="font-medium text-gray-900">{ad.user?.username ?? '—'}</dd>
+                <dd className="font-medium text-gray-900" dir="ltr">
+                  {ad.user?.username ?? ad.user?.mobile ?? '—'}
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500">اطلاعات تماس</dt>

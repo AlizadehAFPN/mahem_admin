@@ -24,3 +24,14 @@ export async function rejectDiscountAction(id: string, formData: FormData) {
   revalidatePath(`/dashboard/advertisements/${id}`);
   revalidatePath('/dashboard');
 }
+
+// تخفیف‌یاب ads carry the same one-off posting fee as استخدامی ads (see
+// Category.adFeeToman) — an APPROVED discount stays invisible in the app
+// until its payment is also confirmed, so this list needs its own
+// confirm-payment action just like /dashboard/advertisements does.
+export async function confirmDiscountPaymentAction(id: string) {
+  const { token } = await requireAdminUser();
+  await apiPatch(`/admin/advertisements/${id}/confirm-payment`, undefined, token);
+  revalidatePath('/dashboard/discounts');
+  revalidatePath(`/dashboard/advertisements/${id}`);
+}

@@ -109,7 +109,9 @@ export default async function StoresPage({
                     {store.name}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{store.user?.username ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-600" dir="ltr">
+                  {store.user?.username ?? store.user?.mobile ?? '—'}
+                </td>
                 <td className="px-4 py-3 text-gray-600">{store.city?.name}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col gap-1">

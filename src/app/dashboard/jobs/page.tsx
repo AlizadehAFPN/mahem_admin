@@ -93,7 +93,9 @@ export default async function JobsPage({
                     {job.title}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{job.user?.username ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-600" dir="ltr">
+                  {job.user?.username ?? job.user?.mobile ?? '—'}
+                </td>
                 <td className="px-4 py-3 text-gray-600">{job.category?.name}</td>
                 <td className="px-4 py-3 text-gray-600">{job.city?.name}</td>
                 <td className="px-4 py-3 text-gray-600">{formatSalary(job.salary)}</td>

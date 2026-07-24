@@ -83,7 +83,7 @@ export interface AdminUser {
 interface ListingOwner {
   id: string;
   username: string | null;
-  mobile?: string;
+  mobile: string;
 }
 
 interface ListingBase {

@@ -117,7 +117,9 @@ export default async function JobDetailPage({
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">مالک</dt>
-              <dd className="font-medium text-gray-900">{job.user?.username ?? '—'}</dd>
+              <dd className="font-medium text-gray-900" dir="ltr">
+                {job.user?.username ?? job.user?.mobile ?? '—'}
+              </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">حقوق</dt>
