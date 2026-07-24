@@ -14,6 +14,7 @@ const navItems = [
   { href: '/dashboard/reports', label: 'گزارش‌ها', icon: '🚩' },
   { href: '/dashboard/conversations', label: 'مکالمات', icon: '💬' },
   { href: '/dashboard/users', label: 'کاربران', icon: '👥' },
+  { href: '/dashboard/notifications', label: 'نوتیفیکیشن همگانی', icon: '🔔', superAdminOnly: true },
   { href: '/dashboard/cities', label: 'شهرها', icon: '📍' },
   { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: '🗂️' },
   { href: '/dashboard/attribute-options', label: 'فیلدهای اختصاصی آگهی', icon: '⚙️' },
@@ -31,7 +32,9 @@ export function Sidebar({ user }: { user: AdminUser }) {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map(item => {
+        {navItems
+          .filter(item => !item.superAdminOnly || user.role === 'SUPER_ADMIN')
+          .map(item => {
           const isActive =
             item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
           return (

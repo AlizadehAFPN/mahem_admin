@@ -1,10 +1,11 @@
 import { Badge } from '@/components/badge';
+import { EntityModal } from '@/components/entity-modal';
 import { Pagination } from '@/components/pagination';
 import { RoleSelect } from '@/components/role-select';
 import { apiGet } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
 import type { AdminUser, Paginated } from '@/lib/types';
-import { updateUserRoleAction } from './actions';
+import { sendUserNotificationAction, updateUserRoleAction } from './actions';
 
 export default async function UsersPage({
   searchParams,
@@ -78,6 +79,7 @@ export default async function UsersPage({
               <th className="px-4 py-3">آگهی / فروشگاه / شغل</th>
               <th className="px-4 py-3">نقش</th>
               {isSuperAdmin && <th className="px-4 py-3">تغییر نقش</th>}
+              {isSuperAdmin && <th className="px-4 py-3">نوتیفیکیشن</th>}
             </tr>
           </thead>
           <tbody>
@@ -102,11 +104,24 @@ export default async function UsersPage({
                     />
                   </td>
                 )}
+                {isSuperAdmin && (
+                  <td className="px-4 py-3">
+                    <EntityModal
+                      triggerLabel="ارسال نوتیفیکیشن"
+                      title={`ارسال نوتیفیکیشن به ${u.username ?? u.mobile}`}
+                      fields={[
+                        { name: 'title', label: 'عنوان', required: true },
+                        { name: 'body', label: 'متن پیام', type: 'textarea', required: true },
+                      ]}
+                      action={sendUserNotificationAction.bind(null, u.id)}
+                    />
+                  </td>
+                )}
               </tr>
             ))}
             {result.items.length === 0 && (
               <tr>
-                <td colSpan={isSuperAdmin ? 6 : 5} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={isSuperAdmin ? 7 : 5} className="px-4 py-10 text-center text-gray-400">
                   موردی یافت نشد
                 </td>
               </tr>
