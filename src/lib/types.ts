@@ -24,6 +24,8 @@ export interface City {
   id: string;
   name: string;
   slug: string;
+  lat: number | null;
+  lng: number | null;
   createdAt: string;
 }
 

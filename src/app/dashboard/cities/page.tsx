@@ -12,6 +12,8 @@ export default async function CitiesPage() {
   const fields = [
     { name: 'name', label: 'نام شهر', required: true },
     { name: 'slug', label: 'شناسه (slug)', required: true },
+    { name: 'lat', label: 'عرض جغرافیایی (lat)', type: 'number' as const, required: true },
+    { name: 'lng', label: 'طول جغرافیایی (lng)', type: 'number' as const, required: true },
   ];
 
   return (
@@ -36,6 +38,7 @@ export default async function CitiesPage() {
             <tr>
               <th className="px-4 py-3">نام</th>
               <th className="px-4 py-3">شناسه</th>
+              <th className="px-4 py-3">موقعیت مکانی</th>
               <th className="px-4 py-3">عملیات</th>
             </tr>
           </thead>
@@ -46,13 +49,16 @@ export default async function CitiesPage() {
                 <td className="px-4 py-3 text-gray-500" dir="ltr">
                   {city.slug}
                 </td>
+                <td className="px-4 py-3 text-gray-500" dir="ltr">
+                  {city.lat != null && city.lng != null ? `${city.lat}, ${city.lng}` : '—'}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <EntityModal
                       triggerLabel="ویرایش"
                       title="ویرایش شهر"
                       fields={fields}
-                      initialValues={{ name: city.name, slug: city.slug }}
+                      initialValues={{ name: city.name, slug: city.slug, lat: city.lat, lng: city.lng }}
                       action={updateCityAction.bind(null, city.id)}
                     />
                     <DeleteButton
@@ -65,7 +71,7 @@ export default async function CitiesPage() {
             ))}
             {cities.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={4} className="px-4 py-10 text-center text-gray-400">
                   شهری ثبت نشده است
                 </td>
               </tr>

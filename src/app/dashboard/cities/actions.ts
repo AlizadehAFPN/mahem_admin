@@ -10,7 +10,12 @@ export async function createCityAction(formData: FormData): Promise<ActionResult
   try {
     await apiPost(
       '/cities',
-      { name: String(formData.get('name')), slug: String(formData.get('slug')) },
+      {
+        name: String(formData.get('name')),
+        slug: String(formData.get('slug')),
+        lat: Number(formData.get('lat')),
+        lng: Number(formData.get('lng')),
+      },
       token,
     );
   } catch (error) {
@@ -25,7 +30,12 @@ export async function updateCityAction(id: string, formData: FormData): Promise<
   try {
     await apiPatch(
       `/cities/${id}`,
-      { name: String(formData.get('name')), slug: String(formData.get('slug')) },
+      {
+        name: String(formData.get('name')),
+        slug: String(formData.get('slug')),
+        lat: Number(formData.get('lat')),
+        lng: Number(formData.get('lng')),
+      },
       token,
     );
   } catch (error) {
