@@ -250,3 +250,56 @@ export interface DashboardStats {
     jobs: number;
   };
 }
+
+export type AnalyticsType = 'advertisement' | 'store' | 'job' | 'storeOffer';
+export type AnalyticsGranularity = 'day' | 'week' | 'month';
+
+export interface AnalyticsViewSeriesPoint {
+  key: string;
+  label: string;
+  total: number;
+  unique: number;
+}
+
+export interface AnalyticsRegSeriesPoint {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface AnalyticsCityViews {
+  cityId: string | null;
+  cityName: string;
+  total: number;
+  unique: number;
+}
+
+export interface AnalyticsCityCount {
+  cityId: string | null;
+  cityName: string;
+  count: number;
+}
+
+export interface AnalyticsOverview {
+  range: { from: string; to: string };
+  filters: {
+    type: AnalyticsType | null;
+    cityId: string | null;
+    granularity: AnalyticsGranularity;
+  };
+  views: {
+    total: number;
+    unique: number;
+    series: AnalyticsViewSeriesPoint[];
+    byCity: AnalyticsCityViews[];
+  };
+  registrations: {
+    total: number;
+    series: AnalyticsRegSeriesPoint[];
+    byCity: AnalyticsCityCount[];
+  };
+  users: {
+    total: number;
+    byCity: AnalyticsCityCount[];
+  };
+}

@@ -7,6 +7,7 @@ import type { AdminUser } from '@/lib/types';
 
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: '📊' },
+  { href: '/dashboard/analytics', label: 'آمار و گزارش بازدید', icon: '📈' },
   { href: '/dashboard/advertisements', label: 'آگهی‌ها', icon: '🏷️' },
   { href: '/dashboard/discounts', label: 'تخفیف یاب', icon: '🏷️' },
   { href: '/dashboard/stores', label: 'فروشگاه‌ها', icon: '🏪' },
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/dashboard/attribute-options', label: 'فیلدهای اختصاصی آگهی', icon: '⚙️' },
   { href: '/dashboard/banners', label: 'بنرها', icon: '🖼️' },
   { href: '/dashboard/splash-screens', label: 'تصویر اسپلش', icon: '📱' },
+  { href: '/dashboard/app-settings', label: 'محتوای اپ', icon: '📝' },
   { href: '/dashboard/ad-expiry', label: 'تاریخ انقضا آگهی', icon: '⏳', superAdminOnly: true },
   { href: '/dashboard/store-expiry', label: 'مدت اشتراک فروشگاه', icon: '⏳', superAdminOnly: true },
   { href: '/dashboard/job-expiry', label: 'تاریخ انقضا آگهی استخدام', icon: '⏳', superAdminOnly: true },
