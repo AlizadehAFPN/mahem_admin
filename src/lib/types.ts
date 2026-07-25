@@ -181,29 +181,6 @@ export interface Job extends PaidListingBase {
   lng: number | null;
 }
 
-export interface StoreOffer {
-  id: string;
-  title: string;
-  description: string | null;
-  discountPercent: number | null;
-  originalPrice: string | null;
-  images: string[];
-  contactInfo: string | null;
-  expiresAt: string | null;
-  status: ListingStatus;
-  approvalStatus: ApprovalStatus;
-  rejectionReason: string | null;
-  reviewedAt: string | null;
-  reviewedById: string | null;
-  paymentStatus: PaymentStatus;
-  paymentConfirmedAt: string | null;
-  store: { id: string; name: string; userId: string };
-  city: City;
-  user: ListingOwner;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Report {
   id: string;
   category: ReportCategory;
@@ -253,7 +230,6 @@ export interface DashboardStats {
     advertisements: number;
     stores: number;
     jobs: number;
-    storeOffers: number;
     reports: number;
     total: number;
   };
@@ -264,7 +240,7 @@ export interface DashboardStats {
   };
 }
 
-export type AnalyticsType = 'advertisement' | 'store' | 'job' | 'storeOffer';
+export type AnalyticsType = 'advertisement' | 'store' | 'job';
 export type AnalyticsGranularity = 'day' | 'week' | 'month';
 
 export interface AnalyticsViewSeriesPoint {

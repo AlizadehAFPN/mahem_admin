@@ -11,8 +11,10 @@ import type {
 
 const TYPE_OPTIONS: { value: '' | AnalyticsType; label: string }[] = [
   { value: '', label: 'همه' },
+  // No separate تخفیف‌یاب row: a discount is an ordinary Advertisement (it
+  // just carries a storeId when posted under a storefront), so its views are
+  // already counted under «آگهی».
   { value: 'advertisement', label: 'آگهی' },
-  { value: 'storeOffer', label: 'تخفیف‌یاب' },
   { value: 'store', label: 'فروشگاه' },
   { value: 'job', label: 'مشاغل' },
 ];
