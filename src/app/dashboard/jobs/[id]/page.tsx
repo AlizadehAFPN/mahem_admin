@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { AdLocationMap } from '@/components/ad-location-map';
 import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
+import { InlineEditField } from '@/components/inline-edit-field';
+import { LocationPickerModal } from '@/components/location-picker-modal';
 import { RejectButton } from '@/components/reject-button';
+import { SingleImageEditor } from '@/components/single-image-editor';
 import { apiGet } from '@/lib/api';
-import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
-import type { Job } from '@/lib/types';
+import type { Category, City, Job } from '@/lib/types';
 import {
   approveJobAction,
   confirmJobPaymentAction,
@@ -24,14 +26,41 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString('fa-IR');
 }
 
+// Registration/contact fields on Job — each entry's second value is the
+// UpdateJobDto field name the pencil icon PATCHes.
+const CONTACT_FIELDS: { label: string; field: keyof Job }[] = [
+  { label: 'مدیریت', field: 'manager' },
+  { label: 'شماره ثبت', field: 'registerCode' },
+  { label: 'تلفن ثابت', field: 'phone' },
+  { label: 'تلفن همراه', field: 'mobile' },
+  { label: 'فکس', field: 'fax' },
+  { label: 'آدرس', field: 'address' },
+  { label: 'تلگرام', field: 'telegram' },
+  { label: 'اینستاگرام', field: 'instagram' },
+  { label: 'ایمیل', field: 'email' },
+];
+
 export default async function JobDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { token } = await requireAdminUser();
-  const job = await apiGet<Job>(`/admin/jobs/${id}`, token);
+  const { user, token } = await requireAdminUser();
+  const [job, categories, cities] = await Promise.all([
+    apiGet<Job>(`/admin/jobs/${id}`, token),
+    apiGet<Category[]>('/categories', token),
+    apiGet<City[]>('/cities', token),
+  ]);
+
+  const canEdit = user.role === 'SUPER_ADMIN';
+  const categoryOptions = categories
+    .filter(c => c.type === 'JOB')
+    .map(c => ({ value: c.id, label: c.name }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
+  const cityOptions = cities
+    .map(c => ({ value: c.id, label: c.name }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
 
   return (
     <div className="space-y-6">
@@ -40,7 +69,17 @@ export default async function JobDetailPage({
           <Link href="/dashboard/jobs" className="text-sm text-gray-500 hover:text-gray-700">
             ← بازگشت به لیست مشاغل
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{job.title}</h1>
+          <div className="mt-1">
+            <InlineEditField
+              entityPath="jobs"
+              id={job.id}
+              fieldName="title"
+              label="عنوان"
+              value={job.title}
+              canEdit={canEdit}
+              variant="heading"
+            />
+          </div>
           <div className="mt-2 flex items-center gap-2">
             <Badge value={job.approvalStatus} />
             <Badge value={job.status} />
@@ -93,44 +132,80 @@ export default async function JobDetailPage({
       )}
 
       <div className="flex gap-4">
-        {job.banner && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={proxiedImageUrl(job.banner)} alt="" className="h-40 w-64 rounded-xl object-cover ring-1 ring-gray-200" />
-        )}
-        {job.logo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={proxiedImageUrl(job.logo)} alt="" className="h-40 w-40 rounded-xl object-cover ring-1 ring-gray-200" />
-        )}
+        <SingleImageEditor
+          entityPath="jobs"
+          id={job.id}
+          fieldName="banner"
+          label="بنر"
+          url={job.banner}
+          canEdit={canEdit}
+          className="h-40 w-64"
+        />
+        <SingleImageEditor
+          entityPath="jobs"
+          id={job.id}
+          fieldName="logo"
+          label="لوگو"
+          url={job.logo}
+          canEdit={canEdit}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 lg:col-span-2">
-          <h2 className="mb-3 text-sm font-semibold text-gray-500">توضیحات</h2>
-          <p className="whitespace-pre-wrap text-sm text-gray-800">{job.description}</p>
+          <InlineEditField
+            entityPath="jobs"
+            id={job.id}
+            fieldName="description"
+            label="توضیحات"
+            value={job.description}
+            canEdit={canEdit}
+            variant="block"
+          />
         </section>
 
         <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
           <h2 className="mb-3 text-sm font-semibold text-gray-500">اطلاعات صنف</h2>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-gray-500">نوع صنف</dt>
-              <dd className="font-medium text-gray-900">{job.category?.name}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-500">شهر</dt>
-              <dd className="font-medium text-gray-900">{job.city?.name}</dd>
-            </div>
-            <div className="flex justify-between">
+            <InlineEditField
+              entityPath="jobs"
+              id={job.id}
+              fieldName="categoryId"
+              label="نوع صنف"
+              value={job.category?.id ?? null}
+              type="select"
+              options={categoryOptions}
+              canEdit={canEdit}
+              displayValue={job.category?.name}
+            />
+            <InlineEditField
+              entityPath="jobs"
+              id={job.id}
+              fieldName="cityId"
+              label="شهر"
+              value={job.city?.id ?? null}
+              type="select"
+              options={cityOptions}
+              canEdit={canEdit}
+              displayValue={job.city?.name}
+            />
+            <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
               <dt className="text-gray-500">مالک</dt>
               <dd className="font-medium text-gray-900" dir="ltr">
                 {job.user?.username ?? job.user?.mobile ?? '—'}
               </dd>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-500">حقوق</dt>
-              <dd className="font-medium text-gray-900">{formatSalary(job.salary)}</dd>
-            </div>
-            <div className="flex justify-between">
+            <InlineEditField
+              entityPath="jobs"
+              id={job.id}
+              fieldName="salary"
+              label="حقوق"
+              value={job.salary ? Number(job.salary) : null}
+              type="number"
+              canEdit={canEdit}
+              displayValue={formatSalary(job.salary)}
+            />
+            <div className="flex justify-between py-1.5 text-sm">
               <dt className="text-gray-500">تاریخ انقضا</dt>
               <dd className="font-medium text-gray-900">{formatDate(job.expiresAt)}</dd>
             </div>
@@ -140,30 +215,27 @@ export default async function JobDetailPage({
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
         <h2 className="mb-3 text-sm font-semibold text-gray-500">اطلاعات تماس و ثبت</h2>
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-3">
-          {[
-            ['مدیریت', job.manager],
-            ['شماره ثبت', job.registerCode],
-            ['تلفن ثابت', job.phone],
-            ['تلفن همراه', job.mobile],
-            ['فکس', job.fax],
-            ['آدرس', job.address],
-            ['تلگرام', job.telegram],
-            ['اینستاگرام', job.instagram],
-            ['ایمیل', job.email],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-              <dt className="text-gray-500">{label}</dt>
-              <dd className="font-medium text-gray-900" dir="ltr">
-                {value || '—'}
-              </dd>
-            </div>
+        <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-3">
+          {CONTACT_FIELDS.map(({ label, field }) => (
+            <InlineEditField
+              key={field}
+              entityPath="jobs"
+              id={job.id}
+              fieldName={field}
+              label={label}
+              value={(job[field] as string | null) ?? null}
+              canEdit={canEdit}
+              dir="ltr"
+            />
           ))}
         </dl>
       </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">موقعیت مکانی</h2>
+        <div className="mb-3 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-gray-500">موقعیت مکانی</h2>
+          {canEdit && <LocationPickerModal entityPath="jobs" id={job.id} lat={job.lat} lng={job.lng} />}
+        </div>
         {job.lat != null && job.lng != null ? (
           <AdLocationMap lat={job.lat} lng={job.lng} />
         ) : (

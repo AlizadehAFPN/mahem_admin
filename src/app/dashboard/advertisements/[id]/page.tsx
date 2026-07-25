@@ -3,12 +3,14 @@ import { AdLocationMap } from '@/components/ad-location-map';
 import { ArchiveButton } from '@/components/archive-button';
 import { Badge } from '@/components/badge';
 import { DeleteButton } from '@/components/delete-button';
+import { ImageArrayEditor } from '@/components/image-array-editor';
+import { InlineEditField } from '@/components/inline-edit-field';
+import { LocationPickerModal } from '@/components/location-picker-modal';
 import { RejectButton } from '@/components/reject-button';
 import { SetExpiryButton } from '@/components/set-expiry-button';
 import { apiGet } from '@/lib/api';
-import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
-import type { Advertisement } from '@/lib/types';
+import type { Advertisement, Category, City } from '@/lib/types';
 import {
   approveAdvertisementAction,
   archiveAdvertisementAction,
@@ -59,6 +61,20 @@ function formatAttributeValue(key: string, value: unknown) {
   return String(value);
 }
 
+// Full breadcrumb path so a flat list of many categories stays navigable —
+// mirrors the pathLabel helper in dashboard/categories/page.tsx.
+function pathLabel(category: Category, byId: Map<string, Category>): string {
+  const segments = [category.name];
+  let current = category;
+  while (current.parentId) {
+    const parent = byId.get(current.parentId);
+    if (!parent) break;
+    segments.unshift(parent.name);
+    current = parent;
+  }
+  return segments.join(' > ');
+}
+
 export default async function AdvertisementDetailPage({
   params,
 }: {
@@ -66,7 +82,21 @@ export default async function AdvertisementDetailPage({
 }) {
   const { id } = await params;
   const { user, token } = await requireAdminUser();
-  const ad = await apiGet<Advertisement>(`/admin/advertisements/${id}`, token);
+  const [ad, categories, cities] = await Promise.all([
+    apiGet<Advertisement>(`/admin/advertisements/${id}`, token),
+    apiGet<Category[]>('/categories', token),
+    apiGet<City[]>('/cities', token),
+  ]);
+
+  const canEdit = user.role === 'SUPER_ADMIN';
+  const categoryById = new Map(categories.map(c => [c.id, c]));
+  const categoryOptions = categories
+    .filter(c => c.type === 'GENERAL')
+    .map(c => ({ value: c.id, label: pathLabel(c, categoryById) }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
+  const cityOptions = cities
+    .map(c => ({ value: c.id, label: c.name }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
 
   const attributeEntries = ad.attributes ? Object.entries(ad.attributes) : [];
 
@@ -77,7 +107,17 @@ export default async function AdvertisementDetailPage({
           <Link href="/dashboard/advertisements" className="text-sm text-gray-500 hover:text-gray-700">
             ← بازگشت به لیست آگهی‌ها
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900">{ad.title}</h1>
+          <div className="mt-1">
+            <InlineEditField
+              entityPath="advertisements"
+              id={ad.id}
+              fieldName="title"
+              label="عنوان"
+              value={ad.title}
+              canEdit={canEdit}
+              variant="heading"
+            />
+          </div>
           <div className="mt-2 flex items-center gap-2">
             <Badge value={ad.approvalStatus} />
             <Badge value={ad.status} />
@@ -145,22 +185,24 @@ export default async function AdvertisementDetailPage({
         </div>
       )}
 
-      {ad.images.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {ad.images.map(url => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={url}
-              src={proxiedImageUrl(url)}
-              alt=""
-              className="h-40 w-full rounded-xl object-cover ring-1 ring-gray-200"
-            />
-          ))}
-        </div>
-      )}
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+        <h2 className="mb-3 text-sm font-semibold text-gray-500">تصاویر</h2>
+        <ImageArrayEditor
+          entityPath="advertisements"
+          id={ad.id}
+          fieldName="images"
+          images={ad.images}
+          canEdit={canEdit}
+        />
+      </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500">موقعیت مکانی</h2>
+        <div className="mb-3 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-gray-500">موقعیت مکانی</h2>
+          {canEdit && (
+            <LocationPickerModal entityPath="advertisements" id={ad.id} lat={ad.lat} lng={ad.lng} />
+          )}
+        </div>
         {ad.lat != null && ad.lng != null ? (
           <AdLocationMap lat={ad.lat} lng={ad.lng} />
         ) : (
@@ -171,8 +213,15 @@ export default async function AdvertisementDetailPage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-            <h2 className="mb-3 text-sm font-semibold text-gray-500">توضیحات</h2>
-            <p className="whitespace-pre-wrap text-sm text-gray-800">{ad.description}</p>
+            <InlineEditField
+              entityPath="advertisements"
+              id={ad.id}
+              fieldName="description"
+              label="توضیحات"
+              value={ad.description}
+              canEdit={canEdit}
+              variant="block"
+            />
           </section>
 
           {attributeEntries.length > 0 && (
@@ -180,16 +229,30 @@ export default async function AdvertisementDetailPage({
               <h2 className="mb-3 text-sm font-semibold text-gray-500">
                 ویژگی‌های اختصاصی دسته‌بندی
               </h2>
-              <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+              <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
                 {attributeEntries.map(([key, value]) => (
-                  <div key={key} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-                    <dt className="text-gray-500" dir={ATTRIBUTE_LABELS[key] ? undefined : 'ltr'}>
-                      {ATTRIBUTE_LABELS[key] ?? key}
-                    </dt>
-                    <dd className="font-medium text-gray-900">
-                      {formatAttributeValue(key, value)}
-                    </dd>
-                  </div>
+                  <InlineEditField
+                    key={key}
+                    entityPath="advertisements"
+                    id={ad.id}
+                    fieldName={key}
+                    label={ATTRIBUTE_LABELS[key] ?? key}
+                    value={typeof value === 'boolean' ? String(value) : (value as string | number)}
+                    type={typeof value === 'boolean' ? 'select' : 'text'}
+                    options={
+                      typeof value === 'boolean'
+                        ? [
+                            { value: 'true', label: 'بله' },
+                            { value: 'false', label: 'خیر' },
+                          ]
+                        : undefined
+                    }
+                    parseValue={typeof value === 'boolean' ? raw => raw === 'true' : undefined}
+                    canEdit={canEdit}
+                    displayValue={formatAttributeValue(key, value)}
+                    dir={ATTRIBUTE_LABELS[key] ? undefined : 'ltr'}
+                    buildPayload={parsed => ({ attributes: { ...ad.attributes, [key]: parsed } })}
+                  />
                 ))}
               </dl>
             </section>
@@ -200,19 +263,39 @@ export default async function AdvertisementDetailPage({
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
             <h2 className="mb-3 text-sm font-semibold text-gray-500">اطلاعات</h2>
             <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-gray-500">قیمت</dt>
-                <dd className="font-medium text-gray-900">{formatPrice(ad.price)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">دسته‌بندی</dt>
-                <dd className="font-medium text-gray-900">{ad.category?.name}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">شهر</dt>
-                <dd className="font-medium text-gray-900">{ad.city?.name}</dd>
-              </div>
-              <div className="flex justify-between">
+              <InlineEditField
+                entityPath="advertisements"
+                id={ad.id}
+                fieldName="price"
+                label="قیمت"
+                value={ad.price ? Number(ad.price) : null}
+                type="number"
+                canEdit={canEdit}
+                displayValue={formatPrice(ad.price)}
+              />
+              <InlineEditField
+                entityPath="advertisements"
+                id={ad.id}
+                fieldName="categoryId"
+                label="دسته‌بندی"
+                value={ad.category?.id ?? null}
+                type="select"
+                options={categoryOptions}
+                canEdit={canEdit}
+                displayValue={ad.category?.name}
+              />
+              <InlineEditField
+                entityPath="advertisements"
+                id={ad.id}
+                fieldName="cityId"
+                label="شهر"
+                value={ad.city?.id ?? null}
+                type="select"
+                options={cityOptions}
+                canEdit={canEdit}
+                displayValue={ad.city?.name}
+              />
+              <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
                 <dt className="text-gray-500">مالک</dt>
                 <dd
                   className="font-medium text-gray-900"
@@ -221,25 +304,28 @@ export default async function AdvertisementDetailPage({
                   {ad.user?.username ?? ad.store?.name ?? '—'}
                 </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-500">اطلاعات تماس</dt>
-                <dd className="font-medium text-gray-900" dir="ltr">
-                  {ad.contactInfo ?? '—'}
-                </dd>
-              </div>
-              <div className="flex justify-between">
+              <InlineEditField
+                entityPath="advertisements"
+                id={ad.id}
+                fieldName="contactInfo"
+                label="اطلاعات تماس"
+                value={ad.contactInfo}
+                canEdit={canEdit}
+                dir="ltr"
+              />
+              <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
                 <dt className="text-gray-500">تعداد بازدید</dt>
                 <dd className="font-medium text-gray-900">{ad.viewsCount}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
                 <dt className="text-gray-500">تاریخ ثبت</dt>
                 <dd className="font-medium text-gray-900">{formatDate(ad.createdAt)}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
                 <dt className="text-gray-500">تاریخ انقضا</dt>
                 <dd className="font-medium text-gray-900">{formatDate(ad.expiresAt)}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between py-1.5 text-sm">
                 <dt className="text-gray-500">امتیاز</dt>
                 <dd className="font-medium text-gray-900">
                   {ad.ratingCount > 0

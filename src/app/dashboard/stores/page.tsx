@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Badge } from '@/components/badge';
 import { Pagination } from '@/components/pagination';
 import { RejectButton } from '@/components/reject-button';
@@ -93,7 +94,7 @@ export default async function StoresPage({
             {result.items.map(store => (
               <tr key={store.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3 font-medium text-gray-900">
-                  <div className="flex items-center gap-2">
+                  <Link href={`/dashboard/stores/${store.id}`} className="flex items-center gap-2 hover:underline">
                     {store.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -107,7 +108,7 @@ export default async function StoresPage({
                       </span>
                     )}
                     {store.name}
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-4 py-3 text-gray-600" dir="ltr">
                   {store.user?.username ?? store.user?.mobile ?? '—'}
