@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { broadcastNotificationAction } from './actions';
+import { broadcastNotificationAction, type BroadcastResult } from './actions';
 
 export function BroadcastForm({ totalUsers }: { totalUsers: number }) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sentCount, setSentCount] = useState<number | null>(null);
+  const [result, setResult] = useState<BroadcastResult | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const onSend = () => {
@@ -17,14 +17,14 @@ export function BroadcastForm({ totalUsers }: { totalUsers: number }) {
     formData.set('title', title);
     formData.set('body', body);
     startTransition(async () => {
-      const result = await broadcastNotificationAction(formData);
-      if (result.success) {
-        setSentCount(result.usersNotified ?? totalUsers);
+      const res = await broadcastNotificationAction(formData);
+      if (res.success) {
+        setResult(res);
         setConfirming(false);
         setTitle('');
         setBody('');
       } else {
-        setError(result.error ?? 'خطایی رخ داد.');
+        setError(res.error ?? 'خطایی رخ داد.');
       }
     });
   };
@@ -38,7 +38,7 @@ export function BroadcastForm({ totalUsers }: { totalUsers: number }) {
           value={title}
           onChange={e => {
             setTitle(e.target.value);
-            setSentCount(null);
+            setResult(null);
           }}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
         />
@@ -49,7 +49,7 @@ export function BroadcastForm({ totalUsers }: { totalUsers: number }) {
           value={body}
           onChange={e => {
             setBody(e.target.value);
-            setSentCount(null);
+            setResult(null);
           }}
           rows={4}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
@@ -57,10 +57,21 @@ export function BroadcastForm({ totalUsers }: { totalUsers: number }) {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {sentCount !== null && (
-        <p className="text-sm text-green-600">
-          پیام با موفقیت برای {sentCount} کاربر ارسال شد.
-        </p>
+      {result?.success && (
+        <div className="space-y-1 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+          <p>پیام برای {result.usersNotified ?? totalUsers} کاربر ثبت شد.</p>
+          <p>
+            ارسال روی گوشی‌ها: {result.pushSuccessCount ?? 0} موفق
+            {result.pushFailureCount ? ` / ${result.pushFailureCount} ناموفق` : ''}
+            {` (از ${result.deviceCount ?? 0} دستگاه ثبت‌شده)`}
+          </p>
+          {(result.deviceCount ?? 0) === 0 && (
+            <p className="text-amber-700">
+              هیچ دستگاهی توکن ثبت نکرده است؛ پیام فقط داخل اپ ذخیره شد و روی گوشی
+              نمایش داده نمی‌شود.
+            </p>
+          )}
+        </div>
       )}
 
       {!confirming ? (

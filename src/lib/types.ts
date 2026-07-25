@@ -79,7 +79,20 @@ export interface AdminUser {
     stores: number;
     jobs: number;
     bookmarks: number;
+    deviceTokens: number;
   };
+}
+
+export interface DeviceInfo {
+  id: string;
+  platform: string | null;
+  deviceName: string | null;
+  deviceModel: string | null;
+  osName: string | null;
+  osVersion: string | null;
+  appVersion: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ListingOwner {

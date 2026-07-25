@@ -1,8 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { apiPatch, apiPost, ApiError } from '@/lib/api';
-import { requireSuperAdmin } from '@/lib/session';
+import { apiGet, apiPatch, apiPost, ApiError } from '@/lib/api';
+import { requireAdminUser, requireSuperAdmin } from '@/lib/session';
+import type { DeviceInfo } from '@/lib/types';
 
 export interface UpdateRoleResult {
   success: boolean;
@@ -32,6 +33,9 @@ export async function updateUserRoleAction(
 export interface SendNotificationResult {
   success: boolean;
   error?: string;
+  deviceCount?: number;
+  pushSuccessCount?: number;
+  pushFailureCount?: number;
 }
 
 export async function sendUserNotificationAction(
@@ -43,13 +47,40 @@ export async function sendUserNotificationAction(
   const body = String(formData.get('body') ?? '');
 
   try {
-    await apiPost(`/admin/notifications/users/${userId}`, { title, body }, token);
+    const result = await apiPost<{
+      deviceCount: number;
+      pushSuccessCount: number;
+      pushFailureCount: number;
+    }>(`/admin/notifications/users/${userId}`, { title, body }, token);
+    return {
+      success: true,
+      deviceCount: result.deviceCount,
+      pushSuccessCount: result.pushSuccessCount,
+      pushFailureCount: result.pushFailureCount,
+    };
   } catch (error) {
     return {
       success: false,
       error: error instanceof ApiError ? error.message : 'ارسال نوتیفیکیشن با خطا مواجه شد.',
     };
   }
+}
 
-  return { success: true };
+export interface DevicesResult {
+  success: boolean;
+  error?: string;
+  devices?: DeviceInfo[];
+}
+
+export async function getUserDevicesAction(userId: string): Promise<DevicesResult> {
+  const { token } = await requireAdminUser();
+  try {
+    const devices = await apiGet<DeviceInfo[]>(`/admin/users/${userId}/devices`, token);
+    return { success: true, devices };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof ApiError ? error.message : 'دریافت لیست دستگاه‌ها با خطا مواجه شد.',
+    };
+  }
 }

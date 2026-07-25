@@ -1,6 +1,7 @@
 import { apiGet } from '@/lib/api';
 import { requireSuperAdmin } from '@/lib/session';
 import { BroadcastForm } from './broadcast-form';
+import { TestPushButton } from './test-push-button';
 
 export default async function NotificationsPage() {
   const { token } = await requireSuperAdmin();
@@ -15,6 +16,7 @@ export default async function NotificationsPage() {
         </p>
       </div>
 
+      <TestPushButton />
       <BroadcastForm totalUsers={stats.users.total} />
     </div>
   );
