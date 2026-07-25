@@ -18,6 +18,7 @@ export async function broadcastNotificationAction(
   const { token } = await requireSuperAdmin();
   const title = String(formData.get('title') ?? '');
   const body = String(formData.get('body') ?? '');
+  const cityId = String(formData.get('cityId') ?? '').trim() || undefined;
 
   try {
     const result = await apiPost<{
@@ -25,7 +26,7 @@ export async function broadcastNotificationAction(
       deviceCount: number;
       pushSuccessCount: number;
       pushFailureCount: number;
-    }>('/admin/notifications/broadcast', { title, body }, token);
+    }>('/admin/notifications/broadcast', { title, body, cityId }, token);
     return {
       success: true,
       usersNotified: result.usersNotified,
