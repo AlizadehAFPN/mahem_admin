@@ -206,11 +206,14 @@ export interface Conversation {
   seller: { id: string; username: string | null; mobile: string };
 }
 
+// A message is text, an image, or both — the app's chat lets a user attach a
+// single photo, with or without a caption, so neither field is guaranteed.
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  text: string;
+  text: string | null;
+  imageUrl: string | null;
   readAt: string | null;
   createdAt: string;
 }
