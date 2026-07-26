@@ -5,6 +5,7 @@ import { apiGet } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
 import type { AdminUser, Paginated } from '@/lib/types';
 import { updateUserRoleAction } from './actions';
+import { DeleteUserButton } from './delete-user-button';
 import { UserDevicesModal } from './user-devices-modal';
 
 export default async function UsersPage({
@@ -80,6 +81,7 @@ export default async function UsersPage({
               <th className="px-4 py-3">نقش</th>
               <th className="px-4 py-3">دستگاه‌ها / نوتیفیکیشن</th>
               {isSuperAdmin && <th className="px-4 py-3">تغییر نقش</th>}
+              {isSuperAdmin && <th className="px-4 py-3">حذف</th>}
             </tr>
           </thead>
           <tbody>
@@ -112,11 +114,24 @@ export default async function UsersPage({
                     />
                   </td>
                 )}
+                {isSuperAdmin && (
+                  <td className="px-4 py-3">
+                    {u.id === viewer.id || u.role === 'SUPER_ADMIN' ? (
+                      <span className="text-xs text-gray-400">—</span>
+                    ) : (
+                      <DeleteUserButton
+                        userId={u.id}
+                        userMobile={u.mobile}
+                        userLabel={u.username ?? u.mobile}
+                      />
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
             {result.items.length === 0 && (
               <tr>
-                <td colSpan={isSuperAdmin ? 7 : 6} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={isSuperAdmin ? 8 : 6} className="px-4 py-10 text-center text-gray-400">
                   موردی یافت نشد
                 </td>
               </tr>

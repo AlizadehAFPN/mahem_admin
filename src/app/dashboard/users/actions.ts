@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { apiGet, apiPatch, apiPost, ApiError } from '@/lib/api';
+import { apiDelete, apiGet, apiPatch, apiPost, ApiError } from '@/lib/api';
 import { requireAdminUser, requireSuperAdmin } from '@/lib/session';
 import type { DeviceInfo } from '@/lib/types';
 
@@ -64,6 +64,27 @@ export async function sendUserNotificationAction(
       error: error instanceof ApiError ? error.message : 'ارسال نوتیفیکیشن با خطا مواجه شد.',
     };
   }
+}
+
+export interface DeleteUserResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function deleteUserAction(
+  userId: string,
+): Promise<DeleteUserResult> {
+  const { token } = await requireSuperAdmin();
+  try {
+    await apiDelete(`/admin/users/${userId}`, token);
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof ApiError ? error.message : 'حذف کاربر با خطا مواجه شد.',
+    };
+  }
+  revalidatePath('/dashboard/users');
+  return { success: true };
 }
 
 export interface DevicesResult {
