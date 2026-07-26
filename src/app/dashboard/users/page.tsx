@@ -2,6 +2,7 @@ import { Badge } from '@/components/badge';
 import { Pagination } from '@/components/pagination';
 import { RoleSelect } from '@/components/role-select';
 import { apiGet } from '@/lib/api';
+import { proxiedImageUrl } from '@/lib/image';
 import { requireAdminUser } from '@/lib/session';
 import type { AdminUser, Paginated } from '@/lib/types';
 import { updateUserRoleAction } from './actions';
@@ -74,6 +75,7 @@ export default async function UsersPage({
         <table className="w-full text-right text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500">
             <tr>
+              <th className="px-4 py-3">عکس</th>
               <th className="px-4 py-3">موبایل</th>
               <th className="px-4 py-3">نام کاربری</th>
               <th className="px-4 py-3">شهر</th>
@@ -87,6 +89,20 @@ export default async function UsersPage({
           <tbody>
             {result.items.map(u => (
               <tr key={u.id} className="border-b border-gray-100 last:border-0">
+                <td className="px-4 py-3">
+                  {u.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={proxiedImageUrl(u.avatar)}
+                      alt=""
+                      className="h-9 w-9 rounded-full object-cover ring-1 ring-gray-200"
+                    />
+                  ) : (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-sm text-gray-400">
+                      👤
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 font-medium text-gray-900" dir="ltr">
                   {u.mobile}
                 </td>
@@ -131,7 +147,7 @@ export default async function UsersPage({
             ))}
             {result.items.length === 0 && (
               <tr>
-                <td colSpan={isSuperAdmin ? 8 : 6} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={isSuperAdmin ? 9 : 7} className="px-4 py-10 text-center text-gray-400">
                   موردی یافت نشد
                 </td>
               </tr>
