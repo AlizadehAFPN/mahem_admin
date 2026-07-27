@@ -229,8 +229,11 @@ export interface AttributeOption {
 
 export interface DashboardStats {
   users: { total: number; admins: number };
+  // `advertisements` excludes تخفیف‌یاب ads — those are counted in
+  // `discounts` and moderated on /dashboard/discounts instead.
   pendingReview: {
     advertisements: number;
+    discounts: number;
     stores: number;
     jobs: number;
     reports: number;
@@ -238,6 +241,7 @@ export interface DashboardStats {
   };
   listings: {
     advertisements: number;
+    discounts: number;
     stores: number;
     jobs: number;
   };

@@ -8,11 +8,13 @@ import type { AdminUser } from '@/lib/types';
 const navItems = [
   { href: '/dashboard', label: 'داشبورد', icon: '📊' },
   { href: '/dashboard/analytics', label: 'آمار و گزارش بازدید', icon: '📈' },
+  // Same four moderation queues the dashboard cards link to, in the same
+  // order: آگهی / مشاغل / تخفیف یاب / گزارش.
   { href: '/dashboard/advertisements', label: 'آگهی‌ها', icon: '🏷️' },
-  { href: '/dashboard/discounts', label: 'تخفیف یاب', icon: '🏷️' },
-  { href: '/dashboard/stores', label: 'فروشگاه‌ها', icon: '🏪' },
   { href: '/dashboard/jobs', label: 'مشاغل', icon: '💼' },
+  { href: '/dashboard/discounts', label: 'تخفیف یاب', icon: '💸' },
   { href: '/dashboard/reports', label: 'گزارش‌ها', icon: '🚩' },
+  { href: '/dashboard/stores', label: 'فروشگاه‌ها', icon: '🏪' },
   { href: '/dashboard/conversations', label: 'مکالمات', icon: '💬' },
   { href: '/dashboard/users', label: 'کاربران', icon: '👥' },
   { href: '/dashboard/notifications', label: 'نوتیفیکیشن همگانی', icon: '🔔', superAdminOnly: true },
