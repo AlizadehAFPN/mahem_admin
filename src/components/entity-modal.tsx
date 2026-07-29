@@ -15,6 +15,22 @@ export interface ActionResult {
   error?: string;
 }
 
+// Kept just under next.config.ts's serverActions.bodySizeLimit so an oversized
+// image is caught here — with a message naming the file and its size — rather
+// than by the platform, which rejects the whole request with an opaque 413
+// after the upload has already been sent.
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
+function oversizedFileError(formData: FormData): string | null {
+  for (const value of formData.values()) {
+    if (value instanceof File && value.size > MAX_UPLOAD_BYTES) {
+      const mb = (value.size / 1024 / 1024).toFixed(1);
+      return `حجم فایل «${value.name}» ${mb} مگابایت است و از حد مجاز (۵ مگابایت) بیشتر است. لطفاً تصویر را فشرده یا کوچک‌تر کنید.`;
+    }
+  }
+  return null;
+}
+
 export function EntityModal({
   triggerLabel,
   triggerClassName,
@@ -52,12 +68,29 @@ export function EntityModal({
             <form
               action={formData => {
                 setError(null);
+                const tooBig = oversizedFileError(formData);
+                if (tooBig) {
+                  setError(tooBig);
+                  return;
+                }
                 startTransition(async () => {
-                  const result = await action(formData);
-                  if (result.success) {
-                    setOpen(false);
-                  } else {
-                    setError(result.error ?? 'خطایی رخ داد.');
+                  // A Server Action that *throws* (rather than returning an
+                  // unsuccessful ActionResult) escapes the transition and
+                  // trips the nearest error boundary, replacing this whole
+                  // page with the generic failure screen — the modal, the
+                  // form and everything typed into it gone. Kept local
+                  // instead: the form stays open, with the reason on it.
+                  try {
+                    const result = await action(formData);
+                    if (result.success) {
+                      setOpen(false);
+                    } else {
+                      setError(result.error ?? 'خطایی رخ داد.');
+                    }
+                  } catch {
+                    setError(
+                      'ارسال به سرور ناموفق بود. اگر فایل بزرگی انتخاب کرده‌اید آن را کوچک‌تر کنید، در غیر این صورت چند لحظه بعد دوباره تلاش کنید.',
+                    );
                   }
                 });
               }}

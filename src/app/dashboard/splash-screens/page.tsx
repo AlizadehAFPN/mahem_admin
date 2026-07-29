@@ -45,9 +45,11 @@ export default async function SplashScreensPage() {
               saying here rather than leaving each admin to discover it by
               uploading one. The size limit is the /uploads endpoint's. */}
           <p className="mt-1 text-xs text-gray-400">
-            تصویر عمودی تمام‌صفحه (پیشنهادی ۱۲۴۰×۲۶۸۰ پیکسل، حداکثر ۵ مگابایت،
-            فرمت JPG/PNG/WebP). تصویر روی کل صفحه کشیده می‌شود و لبه‌های اضافه
-            بریده می‌شود. شهرهایی که تصویر ندارند اسپلش پیش‌فرض اپ را می‌بینند.
+            تصویر عمودی تمام‌صفحه (پیشنهادی ۱۲۴۰×۲۶۸۰ پیکسل، حجم زیر ۵ مگابایت،
+            فرمت JPG/PNG/WebP — برای عکس تمام‌صفحه معمولاً JPG با کیفیت ۸۰٪
+            بهترین نتیجه را می‌دهد). تصویر روی کل صفحه کشیده می‌شود و لبه‌های
+            اضافه بریده می‌شود. شهرهایی که تصویر ندارند اسپلش پیش‌فرض اپ را
+            می‌بینند و تصویر جدید از اجرای بعدیِ اپ نمایش داده می‌شود.
           </p>
         </div>
         <EntityModal
