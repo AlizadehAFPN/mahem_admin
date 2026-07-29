@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { imageWarnings, type ImageAdvice } from '@/lib/image-advice';
+
+export type { ImageAdvice };
 
 export interface EntityField {
   name: string;
@@ -8,6 +11,7 @@ export interface EntityField {
   type?: 'text' | 'number' | 'checkbox' | 'select' | 'textarea' | 'image' | 'hidden';
   options?: { value: string; label: string }[];
   required?: boolean;
+  advice?: ImageAdvice;
 }
 
 export interface ActionResult {
@@ -31,6 +35,26 @@ function oversizedFileError(formData: FormData): string | null {
   return null;
 }
 
+// Resolves without width/height for anything the browser can't decode (a PDF
+// renamed .jpg, a corrupt file) — the shape-based advice is then skipped
+// rather than the whole check failing.
+function inspectImage(file: File) {
+  return new Promise<Parameters<typeof imageWarnings>[0]>(resolve => {
+    const base = { byteSize: file.size, mimeType: file.type };
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ ...base, width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(base);
+    };
+    img.src = url;
+  });
+}
+
 export function EntityModal({
   triggerLabel,
   triggerClassName,
@@ -49,6 +73,8 @@ export function EntityModal({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Per image field, so a form with more than one doesn't mix them up.
+  const [warnings, setWarnings] = useState<Record<string, string[]>>({});
 
   return (
     <>
@@ -128,8 +154,36 @@ export function EntityModal({
                         accept="image/*"
                         name={field.name}
                         required={field.required && !previewUrl}
+                        onChange={async event => {
+                          const file = event.target.files?.[0];
+                          const advice = field.advice;
+                          if (!file || !advice) {
+                            setWarnings(prev => ({ ...prev, [field.name]: [] }));
+                            return;
+                          }
+                          const found = imageWarnings(await inspectImage(file), advice);
+                          setWarnings(prev => ({ ...prev, [field.name]: found }));
+                        }}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                       />
+                      {/* Advisory only — the submit button stays enabled and
+                          nothing here is re-checked on submit. An admin who
+                          has looked at the photo and wants it anyway should
+                          not have to fight the form. */}
+                      {warnings[field.name]?.length > 0 && (
+                        <div className="mt-2 rounded-lg bg-amber-50 p-3 ring-1 ring-amber-200">
+                          <p className="mb-1 text-xs font-medium text-amber-800">
+                            ⚠️ این تصویر ایده‌آل نیست (می‌توانید با همین ادامه دهید):
+                          </p>
+                          <ul className="list-inside list-disc space-y-1">
+                            {warnings[field.name].map(warning => (
+                              <li key={warning} className="text-xs leading-5 text-amber-700">
+                                {warning}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   );
                 }

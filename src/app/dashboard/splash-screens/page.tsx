@@ -10,6 +10,23 @@ import {
   updateSplashScreenAction,
 } from './actions';
 
+// The app draws this full-screen with resizeMode «cover», so anything that
+// isn't shaped like a phone screen gets cropped on the device rather than
+// letterboxed — which the admin can't see from the panel. Every rule is a
+// warning, never a block: the person uploading is the one looking at the
+// photo. Specific to the splash; a banner is a different shape entirely.
+const SPLASH_IMAGE_ADVICE = {
+  // Phone screens run roughly 16:9 (1.78) to 20:9 (2.22) tall; the band is
+  // widened slightly so a merely-unusual phone ratio doesn't nag.
+  aspectRatio: { min: 1.6, max: 2.4 },
+  minWidth: 1080,
+  // Not a limit — the backend accepts up to 5 MB. This is about how long the
+  // first launch in a new city waits for the image over mobile data.
+  preferredMaxBytes: 100 * 1024,
+  preferredMimeType: 'image/jpeg',
+  preferredFormatLabel: 'JPG',
+};
+
 export default async function SplashScreensPage() {
   const { token } = await requireAdminUser();
   const [splashScreens, cities] = await Promise.all([
@@ -20,7 +37,13 @@ export default async function SplashScreensPage() {
   const cityOptions = cities.map(city => ({ value: city.id, label: city.name }));
 
   const fields = [
-    { name: 'imageFile', label: 'تصویر اسپلش', type: 'image' as const, required: true },
+    {
+      name: 'imageFile',
+      label: 'تصویر اسپلش',
+      type: 'image' as const,
+      required: true,
+      advice: SPLASH_IMAGE_ADVICE,
+    },
     { name: 'imageUrl', label: '', type: 'hidden' as const },
     { name: 'cityId', label: 'شهر', type: 'select' as const, options: cityOptions, required: true },
   ];

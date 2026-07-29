@@ -10,6 +10,12 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // The unit tests under src/lib/__tests__ run straight through Node's
+    // --experimental-strip-types, which resolves imports the way the runtime
+    // does and so needs the explicit .ts extension. Safe here because nothing
+    // is ever emitted from this config — Next does its own compilation, and
+    // it never sees these files.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
