@@ -40,6 +40,15 @@ export default async function SplashScreensPage() {
           <p className="mt-1 text-sm text-gray-500">
             مدیریت تصویر اسپلش (صفحه آغازین) اپلیکیشن برای هر شهر
           </p>
+          {/* The app renders this full-screen with resizeMode «cover», so a
+              landscape or small image is cropped hard on a phone — worth
+              saying here rather than leaving each admin to discover it by
+              uploading one. The size limit is the /uploads endpoint's. */}
+          <p className="mt-1 text-xs text-gray-400">
+            تصویر عمودی تمام‌صفحه (پیشنهادی ۱۲۴۰×۲۶۸۰ پیکسل، حداکثر ۵ مگابایت،
+            فرمت JPG/PNG/WebP). تصویر روی کل صفحه کشیده می‌شود و لبه‌های اضافه
+            بریده می‌شود. شهرهایی که تصویر ندارند اسپلش پیش‌فرض اپ را می‌بینند.
+          </p>
         </div>
         <EntityModal
           triggerLabel="+ اسپلش جدید"
