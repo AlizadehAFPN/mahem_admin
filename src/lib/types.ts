@@ -156,6 +156,12 @@ export interface Store extends PaidListingBase {
   // expiryDays each time confirm-payment is used (initial subscription or a
   // later renewal). Auto-archived once past (see StoreExpiryCron).
   subscriptionExpiresAt: string | null;
+  // Only returned by the store *detail* endpoint (GET /admin/stores/:id), not
+  // by the list — how many discount ads are posted under this storefront, i.e.
+  // how many ads deleting the store would take with it.
+  _count?: {
+    advertisements: number;
+  };
 }
 
 export interface Job extends PaidListingBase {

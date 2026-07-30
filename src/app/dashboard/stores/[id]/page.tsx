@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Badge } from '@/components/badge';
+import { DeleteButton } from '@/components/delete-button';
 import { ImageArrayEditor } from '@/components/image-array-editor';
 import { InlineEditField } from '@/components/inline-edit-field';
 import { RejectButton } from '@/components/reject-button';
@@ -7,7 +8,12 @@ import { SingleImageEditor } from '@/components/single-image-editor';
 import { apiGet } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
 import type { Category, City, Store } from '@/lib/types';
-import { approveStoreAction, confirmStorePaymentAction, rejectStoreAction } from '../actions';
+import {
+  approveStoreAction,
+  confirmStorePaymentAction,
+  deleteStoreAction,
+  rejectStoreAction,
+} from '../actions';
 
 function formatDate(value: string | null) {
   if (!value) return '—';
@@ -35,6 +41,18 @@ export default async function StoreDetailPage({
   const cityOptions = cities
     .map(c => ({ value: c.id, label: c.name }))
     .sort((a, b) => a.label.localeCompare(b.label, 'fa'));
+
+  // Deleting a store also deletes every ad posted under it (see
+  // StoresService.remove), so the confirmation says how many that is — an
+  // admin should never find that out afterwards.
+  const adCount = store._count?.advertisements ?? 0;
+  const deleteConfirmText = [
+    `آیا از حذف قطعی فروشگاه «${store.name}» مطمئن هستید؟`,
+    adCount > 0 ? `${adCount} آگهی ثبت‌شده در این فروشگاه هم حذف می‌شود.` : null,
+    'این عمل قابل بازگشت نیست.',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className="space-y-6">
@@ -92,6 +110,10 @@ export default async function StoreDetailPage({
               <RejectButton action={rejectStoreAction.bind(null, store.id)} />
             </>
           )}
+          <DeleteButton
+            action={deleteStoreAction.bind(null, store.id)}
+            confirmText={deleteConfirmText}
+          />
         </div>
       </div>
 
@@ -193,9 +215,15 @@ export default async function StoreDetailPage({
                 {store.user?.username ?? store.user?.mobile ?? '—'}
               </dd>
             </div>
-            <div className="flex justify-between py-1.5 text-sm">
+            <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
               <dt className="text-gray-500">اشتراک تا</dt>
               <dd className="font-medium text-gray-900">{formatDate(store.subscriptionExpiresAt)}</dd>
+            </div>
+            <div className="flex justify-between py-1.5 text-sm">
+              <dt className="text-gray-500">آگهی‌های این فروشگاه</dt>
+              <dd className="font-medium text-gray-900">
+                {adCount > 0 ? `${adCount} آگهی` : '—'}
+              </dd>
             </div>
           </dl>
         </section>

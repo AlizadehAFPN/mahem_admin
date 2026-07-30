@@ -1,7 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { apiPatch } from '@/lib/api';
+import { redirect } from 'next/navigation';
+import { apiDelete, apiPatch } from '@/lib/api';
 import { requireAdminUser } from '@/lib/session';
 
 export async function approveStoreAction(id: string) {
@@ -27,4 +28,18 @@ export async function confirmStorePaymentAction(id: string) {
   const { token } = await requireAdminUser();
   await apiPatch(`/admin/stores/${id}/confirm-payment`, undefined, token);
   revalidatePath('/dashboard/stores');
+}
+
+// Deletes the storefront for good, together with every discount ad posted
+// under it — the backend does that cascade in one transaction (see
+// StoresService.remove). Hits the plain (non-admin-prefixed) endpoint, whose
+// ownership check already bypasses for ADMIN/SUPER_ADMIN — same as
+// deleteAdvertisementAction.
+export async function deleteStoreAction(id: string) {
+  const { token } = await requireAdminUser();
+  await apiDelete(`/stores/${id}`, token);
+  revalidatePath('/dashboard/stores');
+  revalidatePath('/dashboard/advertisements');
+  revalidatePath('/dashboard');
+  redirect('/dashboard/stores');
 }
