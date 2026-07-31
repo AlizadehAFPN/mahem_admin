@@ -21,10 +21,10 @@ export function InlineEditField({
   options,
   canEdit,
   displayValue,
-  parseValue,
+  parseAsBoolean,
   dir,
   variant = 'row',
-  buildPayload,
+  attributesBase,
 }: {
   entityPath: AdminEditableEntity;
   id: string;
@@ -35,7 +35,13 @@ export function InlineEditField({
   options?: { value: string; label: string }[];
   canEdit: boolean;
   displayValue?: React.ReactNode;
-  parseValue?: (raw: string) => unknown;
+  // The field's underlying value is a boolean (rendered as a بله/خیر
+  // `select`) — draft strings parse back to `true`/`false` instead of
+  // staying a string. A plain flag rather than a parser function: this is a
+  // Client Component, and callers are Server Components (the page fetching
+  // the entity), which can only pass serializable props across that
+  // boundary — not closures.
+  parseAsBoolean?: boolean;
   dir?: 'ltr' | 'rtl';
   // 'row' fits the existing `<dl className="space-y-2 text-sm">` info-panel
   // pattern; 'heading' is for a page's <h1>-sized title field, which lives
@@ -43,11 +49,12 @@ export function InlineEditField({
   // 'block' is for a standalone paragraph (e.g. description) — owns its own
   // display text instead of a caller-rendered <p>, so there's no duplicate.
   variant?: 'row' | 'heading' | 'block';
-  // Escape hatch for fields nested inside a JSON blob (e.g. a single key of
-  // Advertisement.attributes) where the PATCH body isn't just
-  // `{[fieldName]: parsed}` — receives the parsed value, returns the full
-  // payload to send.
-  buildPayload?: (parsed: unknown) => Record<string, unknown>;
+  // For a field nested inside a JSON blob (e.g. a single key of
+  // Advertisement.attributes) rather than its own column: the entity's
+  // current attributes object, so the PATCH body can merge the edited key
+  // into it (`{ attributes: { ...attributesBase, [fieldName]: parsed } }`)
+  // instead of the default `{ [fieldName]: parsed }`.
+  attributesBase?: Record<string, unknown> | null;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value === null || value === undefined ? '' : String(value));
@@ -56,12 +63,15 @@ export function InlineEditField({
 
   const onSave = () => {
     setError(null);
-    const parsed = parseValue
-      ? parseValue(draft)
+    const parsed = parseAsBoolean
+      ? draft === 'true'
       : type === 'number'
         ? (draft === '' ? null : Number(draft))
         : draft;
-    const payload = buildPayload ? buildPayload(parsed) : { [fieldName]: parsed };
+    const payload =
+      attributesBase !== undefined
+        ? { attributes: { ...attributesBase, [fieldName]: parsed } }
+        : { [fieldName]: parsed };
     startTransition(async () => {
       const result = await updateAdminEntityAction(entityPath, id, payload);
       if (result.success) {

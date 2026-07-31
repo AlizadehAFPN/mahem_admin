@@ -247,11 +247,11 @@ export default async function AdvertisementDetailPage({
                           ]
                         : undefined
                     }
-                    parseValue={typeof value === 'boolean' ? raw => raw === 'true' : undefined}
+                    parseAsBoolean={typeof value === 'boolean'}
                     canEdit={canEdit}
                     displayValue={formatAttributeValue(key, value)}
                     dir={ATTRIBUTE_LABELS[key] ? undefined : 'ltr'}
-                    buildPayload={parsed => ({ attributes: { ...ad.attributes, [key]: parsed } })}
+                    attributesBase={ad.attributes}
                   />
                 ))}
               </dl>
