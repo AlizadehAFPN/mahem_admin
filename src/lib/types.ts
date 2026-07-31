@@ -139,6 +139,12 @@ export interface Advertisement extends ListingBase {
   // Set from the global AdExpirySetting at creation, or manually by a
   // SUPER_ADMIN; null means the ad never auto-archives.
   expiresAt: string | null;
+  // Derived, never stored: createdAt + the current AdExpirySetting.expiryDays,
+  // sent by GET /admin/advertisements/:id only when expiresAt is null (see
+  // AdvertisementsService.adminFindOne). Most ads predate the setting, so this
+  // is what the «تاریخ انقضا» row falls back to — always labelled as an
+  // estimate, and never fed back into a write.
+  expiresAtEstimated?: string | null;
   // Optional تخفیف‌یاب storefront this discount ad was posted under; null
   // for ads not tied to a store (most non-discount categories).
   store: { id: string; name: string; logo: string | null } | null;

@@ -30,26 +30,88 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString('fa-IR');
 }
 
-// Persian labels for attribute keys the mobile app is known to send (see
-// mahem's src/utiles/translations.ts and CommonForm/ContactInfoCard) — any
-// other/unrecognized key still falls back to its raw name so nothing is
-// ever silently hidden.
+// Persian label for every attribute key the mobile app sends. The wording is
+// taken from what the app itself shows users for the same field — the
+// `fields`/`forms` namespaces in mahem's src/i18n/languages/fa.ts and the
+// placeholders in components/forms/* — so a moderator reads the same words
+// the poster filled in, not a second vocabulary invented here.
+//
+// Every key present in the database is covered; the `?? key` fallback below
+// exists only so a brand-new key from a future app release still shows its
+// value instead of vanishing from the panel.
+//
+// Two deliberate departures from the app's strings: `parking` is «پارکینگ»
+// (fa.ts has the typo «پارکینک») and `features` uses the نیم‌فاصله spelling
+// «ویژگی‌ها», matching this page's own section heading.
 const ATTRIBUTE_LABELS: Record<string, string> = {
+  // Shared / general
+  ad_type: 'نوع آگهی',
+  features: 'ویژگی‌ها',
+  by_person: 'نوع آگهی‌دهنده',
+  brand: 'برند',
+  email: 'ایمیل',
+  chatEnabled: 'چت فعال است',
+  hideEmail: 'ایمیل در آگهی مخفی شود',
+  // استخدامی
   education: 'میزان تحصیلات',
   degree: 'میزان تحصیلات',
   contractType: 'نوع قرارداد',
   contract_type: 'نوع قرارداد',
-  ad_type: 'نوع آگهی',
-  email: 'ایمیل',
-  chatEnabled: 'چت فعال است',
-  hideEmail: 'ایمیل در آگهی مخفی شود',
-  brand: 'برند',
+  // املاک
   area: 'مساحت',
+  rooms: 'تعداد اتاق',
+  floor: 'طبقه',
+  elevator: 'آسانسور',
+  parking: 'پارکینگ',
+  suburbs: 'حاشیه شهر',
+  rehn: 'رهن',
+  ejare: 'اجاره',
+  convertible: 'قابلیت تبدیل رهن به اجاره',
+  documentType: 'سند اداری',
+  // وسایل نقلیه
+  product_year: 'سال تولید',
+  operation_amount: 'کارکرد',
+  base_type: 'نوع شاسی',
+  is_cash: 'قسطی',
+  // تخفیف‌یاب
+  discountPercent: 'درصد تخفیف',
+  originalPrice: 'قیمت اصلی',
+  installment: 'امکان خرید اقساطی',
+  testPeriodText: 'مهلت تست',
+  usagePeriodText: 'بازه تاریخ استفاده',
+  expiresAt: 'تاریخ پایان تخفیف',
 };
 
+// Attribute keys whose numeric value is an amount in Toman, and those that
+// carry a unit. Without this they render as bare digit strings
+// («485000000»), while the ad's own description spells the same number out
+// as «۴۸۵٬۰۰۰٬۰۰۰ تومان».
+const TOMAN_ATTRIBUTES = new Set(['rehn', 'ejare', 'originalPrice']);
+const UNIT_ATTRIBUTES: Record<string, string> = {
+  area: 'متر',
+  operation_amount: 'کیلومتر',
+  discountPercent: '٪',
+};
+// Stored as an ISO timestamp inside `attributes` (the تخفیف‌یاب end date) —
+// must be shown as a Jalali date like every other date in this product,
+// never as the raw Gregorian string the JSON holds.
+const DATE_ATTRIBUTES = new Set(['expiresAt']);
+// Year-like values: a plain number that must NOT get thousands separators
+// (۱۴۰۳, not ۱٬۴۰۳).
+const YEAR_ATTRIBUTES = new Set(['product_year']);
+
 function formatAttributeValue(key: string, value: unknown) {
+  // A JSON null/absent value used to render as the literal text "null".
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
   if (typeof value === 'boolean') {
     return value ? 'بله' : 'خیر';
+  }
+  // `features` is a string on some ads and an array of strings on others
+  // (the app changed shape); both must read as one line.
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value.join('، ') : '—';
   }
   if (key === 'email' && typeof value === 'string' && value) {
     return (
@@ -57,6 +119,21 @@ function formatAttributeValue(key: string, value: unknown) {
         {value}
       </a>
     );
+  }
+  if (DATE_ATTRIBUTES.has(key)) {
+    return formatDate(String(value));
+  }
+  const numeric = typeof value === 'number' ? value : Number(value);
+  if (!Number.isNaN(numeric) && String(value).trim() !== '') {
+    if (YEAR_ATTRIBUTES.has(key)) {
+      return String(numeric).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
+    }
+    if (TOMAN_ATTRIBUTES.has(key)) {
+      return `${numeric.toLocaleString('fa-IR')} تومان`;
+    }
+    if (UNIT_ATTRIBUTES[key]) {
+      return `${numeric.toLocaleString('fa-IR')} ${UNIT_ATTRIBUTES[key]}`;
+    }
   }
   return String(value);
 }
@@ -237,7 +314,17 @@ export default async function AdvertisementDetailPage({
                     id={ad.id}
                     fieldName={key}
                     label={ATTRIBUTE_LABELS[key] ?? key}
-                    value={typeof value === 'boolean' ? String(value) : (value as string | number)}
+                    // The draft the editor starts from is always a plain
+                    // string — an array (`features` on some ads) or a null
+                    // would otherwise reach the input as an object and come
+                    // back as "[object Object]"/"null" on save.
+                    value={
+                      value === null || value === undefined
+                        ? ''
+                        : Array.isArray(value)
+                          ? value.join('، ')
+                          : String(value)
+                    }
                     type={typeof value === 'boolean' ? 'select' : 'text'}
                     options={
                       typeof value === 'boolean'
@@ -321,9 +408,30 @@ export default async function AdvertisementDetailPage({
                 <dt className="text-gray-500">تاریخ ثبت</dt>
                 <dd className="font-medium text-gray-900">{formatDate(ad.createdAt)}</dd>
               </div>
-              <div className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-                <dt className="text-gray-500">تاریخ انقضا</dt>
-                <dd className="font-medium text-gray-900">{formatDate(ad.expiresAt)}</dd>
+              <div className="flex justify-between gap-3 border-b border-gray-100 py-1.5 text-sm">
+                <dt className="shrink-0 text-gray-500">تاریخ انقضا</dt>
+                <dd className="text-left font-medium text-gray-900">
+                  {ad.expiresAt ? (
+                    formatDate(ad.expiresAt)
+                  ) : ad.expiresAtEstimated ? (
+                    <>
+                      <span>{formatDate(ad.expiresAtEstimated)}</span>
+                      {/* Deliberately marked. The stored expiresAt is null for
+                          nearly every ad, so this date is computed from
+                          تاریخ ثبت + the current expiry window. Most such
+                          dates are already in the past, and an unlabelled
+                          past date sitting next to a green «فعال» badge would
+                          read as a broken archive job rather than as an
+                          estimate. */}
+                      <span className="mt-0.5 block text-xs font-normal text-gray-400">
+                        تخمینی (تاریخ ثبت + مدت اعتبار) — انقضای قطعی ثبت نشده،
+                        این آگهی خودکار آرشیو نمی‌شود.
+                      </span>
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
               </div>
               <div className="flex justify-between py-1.5 text-sm">
                 <dt className="text-gray-500">امتیاز</dt>
