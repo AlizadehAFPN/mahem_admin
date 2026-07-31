@@ -25,15 +25,33 @@ async function request<T>(
   options: RequestInit = {},
   token?: string,
 ): Promise<T> {
-  const res = await fetch(`${BACKEND_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-    cache: 'no-store',
-  });
+  const doFetch = () =>
+    fetch(`${BACKEND_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+      cache: 'no-store',
+    });
+
+  // BACKEND_URL is a bare HTTP IP with no CDN/TLS in front of it, so an
+  // occasional connection reset between Vercel's edge and the VPS throws
+  // here instead of coming back as a response — otherwise surfacing as
+  // dashboard/error.tsx's generic "couldn't reach the server" screen for a
+  // single dropped packet. One retry only for GET (safe to repeat; a
+  // mutating request that already reached the server shouldn't be resent).
+  let res: Response;
+  try {
+    res = await doFetch();
+  } catch (err) {
+    if ((options.method ?? 'GET') !== 'GET') {
+      throw err;
+    }
+    await new Promise(resolve => setTimeout(resolve, 500));
+    res = await doFetch();
+  }
 
   if (res.status === 204) {
     return undefined as T;
